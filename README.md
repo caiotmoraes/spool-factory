@@ -1,2 +1,80 @@
-# spool-manager
-Android NFC spool manager for Snapmaker U1 + Spoolman. Pixel-art UI, automatic feeder assignment and manual filament controls.
+# Spool Manager
+
+**Turn your Android phone into an external NFC spool reader for the Snapmaker U1.**
+
+[Download APK](https://github.com/caiotmoraes/spool-manager/releases/download/v1.3.0-beta.1/Spool-Manager.apk) · [Website](https://caiotmoraes.github.io/spool-manager/) · [Português](README.pt-BR.md) · [Report a bug](https://github.com/caiotmoraes/spool-manager/issues)
+
+<img src="docs/assets/preview.png" alt="Spool Manager pixel-art interface with a giant U1, factory workers and four color-coded spool cards. Illustrative data." width="440">
+
+## What it does
+
+- Reads an NFC tag's UID using your phone and finds its registered spool in Spoolman.
+- Waits for the **next U1 feeder that receives filament**, then associates the scanned spool with that feeder. No feeder selection is needed in automatic mode.
+- Shows the four feeder states, material, brand, colors and remaining spool weight when available.
+- Offers **manual spool selection, association, load and unload** through the U1's native commands, with explicit confirmation.
+- Includes searchable inventory, archived-spool filtering and local history.
+- Uses an offline pixel-art factory interface with animated workers, a pause button and a layout for folded/unfolded screens.
+
+Designed for spools in a drybox below the printer, or as an alternative to reading tags at the built-in readers.
+
+## Requirements
+
+| Component | Requirement |
+|---|---|
+| Phone | Android 8.0+ with NFC; UI is currently in Brazilian Portuguese |
+| Printer | Snapmaker U1 with compatible **PAXX12 Extended Firmware + SpoolLink** |
+| Inventory | A reachable Spoolman deployment; tags registered in `extra.card_uids` |
+| Network | Phone can reach both services through a trusted LAN **or your own VPN/Tailscale** |
+
+Stock Snapmaker firmware is not supported. The integration was developed against the PAXX12 2.0.0-paxx12-24 series; it requires the external-reader `/printer/filament_detect/set` and `/printer/spoollink/set` interfaces, feeder status objects and the native `AUTO_FEEDING` macro. Other firmware versions require validation. No ACR122U, USB reader, custom firmware fork or root access on the phone is needed.
+
+The app does **not** install Spoolman, change your firmware, provision Tailscale or give access to someone else's printer.
+
+## Install and configure
+
+1. Download **Spool-Manager.apk** from the [release](https://github.com/caiotmoraes/spool-manager/releases/tag/v1.3.0-beta.1) to your phone and open it. Allow installation from your browser/file manager when Android asks.
+2. Open the app. The connection settings appear on first use. There are **no preconfigured printer IPs or accounts**.
+3. Enter your **U1 address** and **Spoolman address**. Examples: `192.168.1.50` and `http://spoolman.local:7912`. Bare IPs/hostnames are accepted; an explicit `https://` address is preserved. Use the actual port for your deployment.
+4. Enter API keys if your deployments require them. Tap **Testar**, then **Salvar**.
+5. If using Tailscale, install/sign in to Tailscale separately on your phone and use your own devices' addresses. Otherwise, use your local Wi-Fi network.
+6. Tap **Conectar**. Enable NFC for scanning and allow the monitor notification. The gear icon reopens configuration at any time.
+
+## Automatic workflow
+
+1. With the app open, tap the spool tag against the phone.
+2. Wait until the app identifies the spool and asks you to insert the filament.
+3. Insert filament into **one** free feeder. The app observes a new insertion, waits for preload to finish and submits the tag UID through the external-reader interface.
+4. Wait for confirmation of the correct spool ID and UID returned by the U1.
+
+An unknown/archived/duplicated tag, simultaneous feeder insertions, a timeout or a lost connection will not be reported as a successful association. The app reads UIDs; it does not write tags.
+
+## Manual workflow
+
+Open **Trocar / associar** on a feeder card:
+
+1. Select the feeder and use **Retirar filamento** to unload the old filament, if needed.
+2. After completion, remove the old filament and insert the new one. Wait for preload to finish.
+3. Select the matching active spool from inventory and tap **Associar rolo ao feeder**.
+4. Use **Carregar filamento** if you want the U1 to load it into the toolhead.
+
+Each operation asks for confirmation on the phone. Load/unload may heat the nozzle and move the printer. Controls are blocked during printing, pause, errors, a pending association or another feeder operation. A network timeout does not trigger an automatic motor retry. Disconnecting the monitor does not stop a command already accepted by the U1.
+
+## Identity and missing data
+
+Some firmware events clear per-channel metadata to `NONE`, spool ID zero and default white while filament remains present. The app treats these as missing data, not as a real white spool. It can resolve a live UID through Spoolman or retain a confirmed association for the same continuous insertion.
+
+After a restart or lost connection, a historical association is marked **Última associação · confirme o rolo**. It is a reference, not proof of the currently installed spool. Confirm it manually or scan again. A detected removal or another tag invalidates that reference. Unavailable color/weight is shown as unknown, never fabricated. Color names are approximate; hexadecimal values preserve the source color.
+
+## Release status and limitations
+
+This is an **early public beta**. The interface and integration have automated regression coverage. NFC association has been used on a Galaxy Z Fold7 in the original deployment. The latest public setup flow and physical load/unload controls still need wider device/hardware validation. Do not interpret desktop simulation tests as hardware certification.
+
+Keep the monitor and network connection active during changes. NFC reading requires the app to be visible; after identification, the foreground monitor can continue via its notification. There is no automatic start after reboot. Check [PRIVACY.md](PRIVACY.md) before sharing diagnostics.
+
+## Development and license
+
+[Build and test](BUILDING.md) · [Contributing](CONTRIBUTING.md) · [Privacy](PRIVACY.md) · [MIT license](LICENSE) · [Third-party notices](THIRD_PARTY_NOTICES.md)
+
+Private signing keys, API keys and actual deployment addresses are not included. Official releases and locally compiled development builds use different signing keys unless you supply your own release key.
+
+Inspired by the external-reader workflow in [U1-ACR122U](https://github.com/DnG-Crafts/U1-ACR122U), using the [Extended Firmware external RFID contract](https://github.com/paxx12-snapmaker-u1/SnapmakerU1-Extended-Firmware/blob/develop/docs/design/filament_detect.md) and [Spoolman](https://github.com/Donkie/Spoolman). This is an independent community project.

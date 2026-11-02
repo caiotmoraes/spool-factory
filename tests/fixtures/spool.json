@@ -1,0 +1,21 @@
+{
+  "id": 30,
+  "archived": false,
+  "remaining_weight": 700.0,
+  "initial_weight": 1000.0,
+  "location": "Drybox",
+  "filament": {
+    "id": 1,
+    "name": "Example White",
+    "vendor": {
+      "id": 1,
+      "name": "Example Filaments"
+    },
+    "material": "PETG",
+    "color_hex": "FFFFFF",
+    "weight": 1000.0
+  },
+  "extra": {
+    "card_uids": "\"04A1B2C3D4E5F6\""
+  }
+}

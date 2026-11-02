@@ -1,0 +1,13 @@
+tools/
+build/
+release/
+signing/
+*.p12
+*.jks
+*.keystore
+*.idsig
+.env
+.env.*
+local.properties
+publication-*.json
+__pycache__/

@@ -1,0 +1,29 @@
+name: Build and test
+on:
+  workflow_dispatch:
+  push:
+    paths: ['src/**', 'assets/**', 'res/**', 'tests/**', '*.ps1', 'AndroidManifest.xml', '.github/workflows/build.yml']
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  android:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare Android and Java tooling
+        shell: pwsh
+        run: ./setup.ps1
+      - name: Run desktop regression tests
+        shell: pwsh
+        run: ./test.ps1
+      - name: Build development APK
+        shell: pwsh
+        run: ./build.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: development-apk
+          path: |
+            release/Spool-Manager.apk
+            release/SHA256SUMS.txt
+          retention-days: 14
