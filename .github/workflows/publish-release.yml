@@ -1,0 +1,23 @@
+name: Publish public release
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify signed APK checksum
+        working-directory: downloads
+        run: sha256sum --check SHA256SUMS.txt
+      - name: Publish beta with APK and checksum
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if gh release view v1.4.0-beta.1 >/dev/null 2>&1; then
+            echo "Release already exists; existing assets were preserved."
+          else
+            gh release create v1.4.0-beta.1 downloads/Spool-Factory.apk downloads/SHA256SUMS.txt --target "$GITHUB_SHA" --prerelease --title "Spool Factory 1.4.0 — public beta" --notes-file RELEASE_NOTES.md
+          fi

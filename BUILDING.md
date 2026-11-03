@@ -12,7 +12,7 @@ On Windows with PowerShell 7:
 
 `setup.ps1` downloads tooling from Eclipse Adoptium, Google and Maven Central into the ignored `tools/` folder. SDK ZIP checksums are verified. Review the respective SDK/tool licenses before use. The JSON JAR is a desktop test dependency only and is not bundled into the APK.
 
-Output: `release/Spool-Manager.apk`, a versioned copy, and `release/SHA256SUMS.txt`.
+Output: `release/Spool-Factory.apk`, a versioned copy, and `release/SHA256SUMS.txt`.
 
 ## Signing
 
@@ -22,7 +22,7 @@ For a release build, configure these environment variables without committing th
 
 - `SPOOL_SIGNING_KEY`: absolute path to your private keystore.
 - `SPOOL_SIGNING_PASSWORD`: keystore/key password.
-- `SPOOL_SIGNING_ALIAS`: key alias (default `spool-manager`).
+- `SPOOL_SIGNING_ALIAS`: key alias (default `spool-factory`).
 
 Private keys and passwords must never be uploaded to GitHub. CI compiles with its own temporary development key and uploads test build artifacts; it does not publish official releases.
 

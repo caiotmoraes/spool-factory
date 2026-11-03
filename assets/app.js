@@ -30,7 +30,7 @@ function installed(i){
  let id=Number(cfg.filament_spool_id?.[i]||0),source='',fromCatalog=false;
  if(!id&&uid){const matches=(state.stock||[]).filter(s=>!s.archived&&registeredUids(s).includes(uid));if(matches.length===1){id=matches[0].id;source='Identificado pela tag NFC';fromCatalog=true;}}
  if(!id&&!defined(cfg.filament_type?.[i])&&c.filament_detected&&last?.spool_id&&(!uid||!last.uid||uid===last.uid)){id=last.spool_id;source=last.verified?'Associação confirmada no app · U1 sem identificação':'Última associação · confirme o rolo';fromCatalog=true;}
- const s=(state.stock||[]).find(s=>s.id===id)||(state.spool?.id===id?state.spool:null),exists=id>0||c.filament_detected===true;
+ const s=(state.stock||[]).find(s=>s.id===id)||(state.spool?.id===id?state.spool:null),exists=c.filament_detected===true;
  const identified=!!(defined(cfg.filament_type?.[i])||s?.filament?.material);
  let colors=(!fromCatalog&&defined(cfg.filament_type?.[i]))?cfg.filament_color_multi?.[i]?.colors?.slice(0,cfg.filament_color_multi[i].nums||1).filter(Boolean).map(x=>hex(x)):null;
  if(!colors?.length)colors=(!fromCatalog&&defined(cfg.filament_type?.[i])&&cfg.filament_color_rgba?.[i])?[hex(cfg.filament_color_rgba[i])]:(s?stockColors(s):['#77849d']);
@@ -62,11 +62,11 @@ for(const [id,operation] of [['manual-assign','ASSIGN'],['manual-load','LOAD'],[
 function renderManual(){
  const ch=Number($('manual-channel').value),c=channel(ch),printing=['printing','paused'].includes(state.status?.print_stats?.state),phases=['wait_insert','preload_finish','load_finish','unload_finish','none','inited'];
  const feedersIdle=[0,1,2,3].every(i=>phases.includes(channel(i).channel_state)&&channel(i).channel_error==='ok');
- const allowed=state.connected&&!printing&&!state.manualOperation&&!state.armed&&feedersIdle;
+ const allowed=state.connected&&state.externalMode===true&&!printing&&!state.manualOperation&&!state.armed&&feedersIdle;
  $('manual-assign').disabled=!allowed||!Number($('manual-spool').value)||!c.filament_detected;
  $('manual-load').disabled=!allowed||!c.filament_detected||!defined(state.status?.print_task_config?.filament_type?.[ch]);
  $('manual-unload').disabled=!allowed||!c.filament_detected;
- $('manual-note').textContent=!state.connected?'Conecte à U1 para usar os controles.':printing?'Impressão em andamento ou pausada: trocas manuais bloqueadas.':state.manualOperation?'Operação física em andamento. '+readable(c.channel_state):state.armed?'Aguarde ou cancele a associação pendente.':!feedersIdle?'Aguarde os feeders terminarem a operação atual.':'Feeder '+(ch+1)+' · '+readable(c.channel_state)+'. Associe o rolo correto antes de carregar.';
+ $('manual-note').textContent=!state.connected?'Conecte à U1 para usar os controles.':state.externalMode!==true?'Confirme Filament Detection = External no Firmware Config.':printing?'Impressão em andamento ou pausada: trocas manuais bloqueadas.':state.manualOperation?'Operação física em andamento. '+readable(c.channel_state):state.armed?'Aguarde ou cancele a associação pendente.':!feedersIdle?'Aguarde os feeders terminarem a operação atual.':'Feeder '+(ch+1)+' · '+readable(c.channel_state)+'. Associe o rolo correto antes de carregar.';
 }
 function paintCards(parent){parent.querySelectorAll('canvas.spool-icon').forEach(c=>{const x=c.getContext('2d');x.imageSmoothingEnabled=false;drawSpool(x,20,26,1.7,c.dataset.colors.split(','),c.dataset.empty==='true');});}
 function drawSpool(x,cx,cy,scale,colors,empty=false){
@@ -85,6 +85,7 @@ window.updateApp=function(data){
  $('lamp').classList.toggle('online',!!state.connected);
  $('connection').textContent=state.connected?'U1 conectada':state.running?'Conectando / sem resposta':'U1 desconectada';
  $('connect').textContent=state.running?'Desconectar':'Conectar';
+ $('mode-warning').hidden=!state.connected||state.externalMode===true;
  const msg=state.running?(state.message||'Conectando à U1…'):'Conecte a U1 para começar.';
  $('message').textContent=msg;$('cancel').hidden=!state.armed||!state.running;$('countdown').textContent=state.armed?Math.max(0,state.remaining||0)+' s':'';
  document.querySelector('.feedback').classList.toggle('error',state.running&&/falha|erro|cancelad|não confirmada|sem conexão|expir|encerrad/i.test(msg));

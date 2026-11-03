@@ -20,6 +20,7 @@ public class SpoolService extends Service {
     private boolean manualVerify;
     private volatile JSONArray stock=new JSONArray();
     private volatile String stockError="";
+    private volatile boolean externalMode;
     private volatile long stockAt;
     private long statusAt;
     private final AtomicInteger generation=new AtomicInteger();
@@ -28,11 +29,9 @@ public class SpoolService extends Service {
     private JSONObject status, spool;
     private String uid="", tagType="NTAG", message="Conectando à U1…";
     private final ArrayList<String> history=new ArrayList<>();
-    private final Owned[] owned=new Owned[4];
     private int armGeneration, verifyChannel=-1, verifyCount;
     private long expires, verifyDeadline, lastLog, lastNotify;
     private PowerManager.WakeLock wake;
-    private static class Owned {String uid,type;int id,repairs;long last,removed;boolean manual; Owned(String u,String t,int i,long n){uid=u;type=t;id=i;last=n;}}
     private long now(){return SystemClock.elapsedRealtime();}
     @Override public void onCreate(){
         super.onCreate();alive=true;running=true;
@@ -47,12 +46,12 @@ public class SpoolService extends Service {
         String saved=p.getString("history","");if(!saved.isEmpty())history.addAll(Arrays.asList(saved.split("\n")));
         try{
             String binding=p.getString("ledgerPrinter",api.printer);
-            ledger=new AssociationLedger(binding.equals(api.printer)?p.getString("associations","{}"):"{}");
-            if(!p.getBoolean("ledgerMigrated",false))ledger.migrate(history);
-            saveLedger();p.edit().putBoolean("ledgerMigrated",true).putString("ledgerPrinter",api.printer).apply();
+            ledger=new AssociationLedger(binding.equals(api.printer)&&p.getInt("identityModelVersion",0)>=2?p.getString("associations","{}"):"{}");
+            saveLedger();p.edit().putInt("identityModelVersion",2).putBoolean("ledgerMigrated",true).putString("ledgerPrinter",api.printer).apply();
         }catch(Exception e){try{ledger=new AssociationLedger("{}");}catch(Exception ignored){}}
         try{stock=new JSONArray(p.getString("stock","[]"));stockAt=p.getLong("stockAt",0);}catch(Exception ignored){}
         stockWork.scheduleWithFixedDelay(()->{try{
+            externalMode=api.externalMode();
             JSONArray loaded=api.inventory();if(!alive)return;
             stock=loaded;stockAt=System.currentTimeMillis();stockError="";
             getSharedPreferences("config",0).edit().putString("stock",stock.toString()).putLong("stockAt",stockAt).apply();
@@ -64,7 +63,7 @@ public class SpoolService extends Service {
         PendingIntent pi=PendingIntent.getActivity(this,0,open,PendingIntent.FLAG_IMMUTABLE|PendingIntent.FLAG_UPDATE_CURRENT);
         Intent stop=new Intent(this,SpoolService.class).setAction("STOP");
         PendingIntent sp=PendingIntent.getService(this,1,stop,PendingIntent.FLAG_IMMUTABLE|PendingIntent.FLAG_UPDATE_CURRENT);
-        return new Notification.Builder(this,"monitor").setSmallIcon(br.com.caiot.u1spool.R.drawable.ic_spool).setContentTitle("Spool Manager").setContentText(text).setContentIntent(pi).setOngoing(true).addAction(new Notification.Action.Builder(null,"Parar",sp).build()).build();
+        return new Notification.Builder(this,"monitor").setSmallIcon(br.com.caiot.u1spool.R.drawable.ic_spool).setContentTitle("Spool Factory").setContentText(text).setContentIntent(pi).setOngoing(true).addAction(new Notification.Action.Builder(null,"Parar",sp).build()).build();
     }
     @Override public int onStartCommand(Intent intent,int flags,int id){
         String action=intent==null?"":intent.getAction();
@@ -123,6 +122,7 @@ public class SpoolService extends Service {
         detector.cancel();verifyChannel=-1;manualVerify=false;uid=u;tagType=t;spool=null;armGeneration=g;
         message="Identificando tag "+uid+"…";publish();
         try {
+            api.requireExternal();
             JSONObject found=api.lookup(uid);
             JSONObject fresh=api.status();
             if(!current())return;
@@ -174,45 +174,19 @@ public class SpoolService extends Service {
                 if(!manualVerify&&!Api.sensors(fresh)[ch])cancel("Filamento retirado durante a confirmação. Leia novamente.");
                 else if(Api.spoolId(fresh,ch)==spool.getInt("id")&&(manualVerify||uid.equals(Api.tagUid(fresh,ch)))){
                     if(++verifyCount>=4){
-                        owned[ch]=new Owned(uid,tagType,spool.getInt("id"),now());owned[ch].manual=manualVerify;verifyChannel=-1;
+                        verifyChannel=-1;
                         if(ledger!=null){ledger.record(ch,spool.getInt("id"),uid,manualVerify?"manual":"NFC");saveLedger();}
                         message="Associado ao feeder "+(ch+1)+": "+Api.label(spool);
                         log(message);vibrate();
                     }
                 }else {verifyCount=0;if(now()>verifyDeadline)cancel("Associação não confirmada pelo SpoolLink. Verifique Spoolman e firmware; leia novamente.");}
             }
-            // Native no-tag reads may clear an external assignment. Repair only while the
-            // same insertion remains physically present, idle and with no conflicting UID.
-            if(!busy&&!manualOperation&&!detector.armed&&verifyChannel<0){
-                for(int ch=0;ch<4;ch++){
-                    Owned o=owned[ch];if(o==null)continue;
-                    if(!Api.sensors(fresh)[ch]){
-                        if(o.removed==0)o.removed=now();
-                        if(now()-o.removed<1500)continue;
-                        api.clear(ch,o.uid,o.id);
-                        owned[ch]=null;log("Filamento retirado do feeder "+(ch+1)+". Associação externa liberada.");continue;
-                    }
-                    o.removed=0;
-                    String actual=Api.tagUid(fresh,ch);
-                    if(!actual.isEmpty()&&!actual.equals(o.uid)){owned[ch]=null;log("Feeder "+(ch+1)+": outra tag detectada; controle externo liberado.");continue;}
-                    if(Api.spoolId(fresh,ch)>0&&Api.spoolId(fresh,ch)!=o.id){owned[ch]=null;continue;}
-                    if(Api.spoolId(fresh,ch)==o.id&&(o.manual||actual.equals(o.uid)))continue;
-                    if(now()-o.last<10000)continue;
-                    if(o.repairs>=3){owned[ch]=null;message="Feeder "+(ch+1)+": associação instável. Leia a tag novamente.";log(message);continue;}
-                    JSONObject c=Api.channel(fresh,ch);
-                    if(!"ok".equals(c.optString("channel_error"))||!c.optString("channel_state").endsWith("_finish"))continue;
-                    JSONObject selected=o.manual?api.spool(o.id):api.lookup(o.uid);
-                    if(selected.getInt("id")!=o.id){owned[ch]=null;continue;}
-                    if(!running)return;
-                    if(o.manual)api.assign(ch,selected);else api.inject(ch,o.uid,o.type);o.repairs++;o.last=now();log("Revalidando associação do feeder "+(ch+1));
-                }
-            }
             if("Conectando à U1…".equals(message)||message.startsWith("Sem conexão"))message="Conectado. Aproxime a tag de um rolo.";
             publish();
         }catch(Exception e){
             if(!alive)return;
             if(ledger!=null)ledger.disconnect();
-            detector.cancel();verifyChannel=-1;Arrays.fill(owned,null);
+            detector.cancel();verifyChannel=-1;
             message="Sem conexão ou resposta válida: "+e.getMessage()+". Reconecte e leia a tag novamente.";
             if(now()-lastLog>15000){log(message);lastLog=now();}publish();
         }
@@ -227,7 +201,7 @@ public class SpoolService extends Service {
     private void publish(){try{
         if(!alive)return;
         JSONObject v=new JSONObject().put("message",message).put("armed",detector.armed||verifyChannel>=0).put("remaining",Math.max(0,(expires-now())/1000)).put("uid",uid).put("history",new JSONArray(history)).put("stock",stock).put("stockAt",stockAt).put("stockError",stockError).put("statusAt",statusAt);
-        v.put("manualOperation",manualOperation);if(ledger!=null)v.put("associations",ledger.snapshot());
+        v.put("manualOperation",manualOperation).put("externalMode",externalMode);if(ledger!=null)v.put("associations",ledger.snapshot());
         if(spool!=null)v.put("spool",spool);if(status!=null)v.put("status",status);view=v.toString();
         if(now()-lastNotify>2500){getSystemService(NotificationManager.class).notify(31,notification(message));lastNotify=now();}
     }catch(Exception ignored){}}

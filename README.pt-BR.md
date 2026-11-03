@@ -1,10 +1,10 @@
-# Spool Manager
+# Spool Factory
 
 **Seu celular Android como leitor NFC externo para a Snapmaker U1.**
 
-[Baixar APK](https://github.com/caiotmoraes/spool-manager/releases/download/v1.3.0-beta.1/Spool-Manager.apk) · [Página do projeto](https://caiotmoraes.github.io/spool-manager/) · [English](README.md) · [Relatar problema](https://github.com/caiotmoraes/spool-manager/issues)
+[Baixar APK](https://github.com/caiotmoraes/spool-factory/releases/download/v1.4.0-beta.1/Spool-Factory.apk) · [Página do projeto](https://caiotmoraes.github.io/spool-factory/) · [English](README.md) · [Relatar problema](https://github.com/caiotmoraes/spool-factory/issues)
 
-<img src="docs/assets/preview.png" alt="Interface pixel art do Spool Manager; cores e pesos ilustrativos." width="440">
+<img src="docs/assets/preview.png" alt="Interface pixel art do Spool Factory; cores e pesos ilustrativos." width="440">
 
 ## Para que serve
 
@@ -21,9 +21,15 @@ Também inclui escolha manual do rolo/feeder, associação, carregar/retirar fil
 
 O desenvolvimento usou a série 2.0.0-paxx12-24. São necessárias as interfaces externas `/printer/filament_detect/set`, `/printer/spoollink/set`, os estados dos feeders e a macro `AUTO_FEEDING`. Outras versões precisam ser validadas. O app não instala firmware, Spoolman ou Tailscale. Não exige ACR122U, leitor USB nem root.
 
+## Modo obrigatório: leitor externo
+
+No Firmware Config da U1, selecione **Filament Detection → External**. Isso interrompe as atualizações dos leitores internos/OpenRFID que podiam apagar a associação feita pelo celular durante o carregamento. A mudança reinicia o Klipper: faça apenas com a impressora ociosa e sem operação nos feeders. O aplicativo verifica esse modo antes de gravar; não muda essa configuração automaticamente.
+
+A versão 1.4 remove regravações/limpezas automáticas em segundo plano e descarta referências antigas das versões anteriores no primeiro uso. Uma entrada fisicamente vazia não aparece como rolo instalado só por ter um ID antigo configurado.
+
 ## Instalar e configurar os IPs
 
-1. Baixe **Spool-Manager.apk** na [release pública](https://github.com/caiotmoraes/spool-manager/releases/tag/v1.3.0-beta.1) e abra o arquivo no celular.
+1. Baixe **Spool-Factory.apk** na [release pública](https://github.com/caiotmoraes/spool-factory/releases/tag/v1.4.0-beta.1) e abra o arquivo no celular.
 2. Autorize a instalação pelo navegador/gerenciador quando o Android solicitar.
 3. Ao abrir, a configuração aparece automaticamente: **nenhum IP ou conta vem preenchido**.
 4. Informe o endereço da **sua U1** e do **seu Spoolman**. Exemplos: `192.168.1.50` e `http://spoolman.local:7912`. IP sem `http://` também funciona. Use a porta real do seu serviço.

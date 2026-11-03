@@ -24,6 +24,6 @@ jobs:
         with:
           name: development-apk
           path: |
-            release/Spool-Manager.apk
+            release/Spool-Factory.apk
             release/SHA256SUMS.txt
           retention-days: 14

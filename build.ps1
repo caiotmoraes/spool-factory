@@ -7,7 +7,7 @@ $platform=(Get-ChildItem -LiteralPath "$toolsRoot/platform" -Directory | Select-
 $android=Join-Path $platform 'android.jar'
 [xml]$manifest=Get-Content -LiteralPath AndroidManifest.xml
 $version=$manifest.manifest.GetAttribute('versionName','http://schemas.android.com/apk/res/android')
-$output="release/Spool-Manager-$version.apk"
+$output="release/Spool-Factory-$version.apk"
 function Run([string]$exe,[string[]]$arguments){& $exe @arguments;if($LASTEXITCODE -ne 0){throw "Build failed: $exe ($LASTEXITCODE)"}}
 foreach($d in @('build','build/generated','build/classes','build/dex','release','signing')){New-Item -ItemType Directory -Force $d | Out-Null}
 Run "$bt/aapt2.exe" @('compile','--dir','res','-o','build/resources.zip')
@@ -21,17 +21,17 @@ $apk=[IO.Compression.ZipFile]::Open((Join-Path $PSScriptRoot 'build/unsigned.apk
 try{$old=$apk.GetEntry('classes.dex');if($old){$old.Delete()};[IO.Compression.ZipFileExtensions]::CreateEntryFromFile($apk,(Join-Path $PSScriptRoot 'build/dex/classes.dex'),'classes.dex') | Out-Null}finally{$apk.Dispose()}
 Run "$bt/zipalign.exe" @('-f','-p','4','build/unsigned.apk','build/aligned.apk')
 $key=if($env:SPOOL_SIGNING_KEY){$env:SPOOL_SIGNING_KEY}else{Join-Path $PSScriptRoot 'signing/development.p12'}
-$alias=if($env:SPOOL_SIGNING_ALIAS){$env:SPOOL_SIGNING_ALIAS}else{'spool-manager'}
+$alias=if($env:SPOOL_SIGNING_ALIAS){$env:SPOOL_SIGNING_ALIAS}else{'spool-factory'}
 if(!$env:SPOOL_SIGNING_KEY){
  $passwordPath=Join-Path $PSScriptRoot 'signing/development-password.txt'
  if(!(Test-Path -LiteralPath $passwordPath)){[guid]::NewGuid().ToString('N') | Set-Content -LiteralPath $passwordPath}
  $env:SPOOL_SIGNING_PASSWORD=(Get-Content -LiteralPath $passwordPath -Raw).Trim()
- if(!(Test-Path -LiteralPath $key)){Run "$jdk/bin/keytool.exe" @('-genkeypair','-keystore',$key,'-storetype','PKCS12','-storepass:env','SPOOL_SIGNING_PASSWORD','-keypass:env','SPOOL_SIGNING_PASSWORD','-alias',$alias,'-keyalg','RSA','-keysize','3072','-validity','10000','-dname','CN=Spool Manager Development')}
+ if(!(Test-Path -LiteralPath $key)){Run "$jdk/bin/keytool.exe" @('-genkeypair','-keystore',$key,'-storetype','PKCS12','-storepass:env','SPOOL_SIGNING_PASSWORD','-keypass:env','SPOOL_SIGNING_PASSWORD','-alias',$alias,'-keyalg','RSA','-keysize','3072','-validity','10000','-dname','CN=Spool Factory Development')}
 }
 if(!$env:SPOOL_SIGNING_PASSWORD){throw 'Set SPOOL_SIGNING_PASSWORD for the selected signing key.'}
 Run "$jdk/bin/java.exe" @('-jar',"$bt/lib/apksigner.jar",'sign','--ks',$key,'--ks-pass','env:SPOOL_SIGNING_PASSWORD','--key-pass','env:SPOOL_SIGNING_PASSWORD','--ks-key-alias',$alias,'--out',$output,'build/aligned.apk')
 Run "$jdk/bin/java.exe" @('-jar',"$bt/lib/apksigner.jar",'verify','--verbose','--print-certs',$output)
 Run "$bt/aapt2.exe" @('dump','badging',$output)
-Copy-Item -LiteralPath $output -Destination 'release/Spool-Manager.apk' -Force
+Copy-Item -LiteralPath $output -Destination 'release/Spool-Factory.apk' -Force
 $hash=(Get-FileHash -LiteralPath $output -Algorithm SHA256).Hash.ToLower()
-"$hash  Spool-Manager.apk" | Set-Content -Encoding ascii 'release/SHA256SUMS.txt'
+"$hash  Spool-Factory.apk" | Set-Content -Encoding ascii 'release/SHA256SUMS.txt'

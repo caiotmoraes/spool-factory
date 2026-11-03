@@ -48,6 +48,14 @@ final class Api {
         boolean[] b=new boolean[4];for(int i=0;i<4;i++) {JSONObject c=channel(s,i);if(!c.optBoolean("module_exist")||!c.has("filament_detected"))throw new IOException("Feeder "+(i+1)+" indisponível");b[i]=c.getBoolean("filament_detected");}return b;
     }
     static boolean printing(JSONObject s) throws Exception {String v=s.getJSONObject("print_stats").getString("state");return "printing".equals(v)||"paused".equals(v);}
+    boolean externalMode()throws Exception{
+        JSONObject groups=(JSONObject)request(printer,"/firmware-config/api/settings",null,printerKey);
+        Iterator<String> keys=groups.keys();while(keys.hasNext()){
+            JSONObject group=groups.optJSONObject(keys.next());if(group==null)continue;JSONArray items=group.optJSONArray("items");if(items==null)continue;
+            for(int i=0;i<items.length();i++){JSONObject item=items.optJSONObject(i);if(item!=null&&"rfid".equals(item.optString("id")))return "external".equals(item.optString("current"));}
+        }throw new IOException("Não foi possível verificar Filament Detection. Confirme o modo External no Firmware Config.");
+    }
+    void requireExternal()throws Exception{if(!externalMode())throw new IOException("Selecione Filament Detection = External no Firmware Config antes de associar ou carregar rolos. Leitores internos podem apagar os dados.");}
     static String normalize(String s){return s.replaceAll("[^0-9A-Fa-f]", "").toUpperCase(Locale.ROOT);}
     static Set<String> uids(JSONObject spool) throws Exception {
         Set<String> set=new HashSet<>();JSONObject ex=spool.optJSONObject("extra");if(ex==null)return set;
@@ -90,10 +98,11 @@ final class Api {
     }
     void assign(int ch,JSONObject selected)throws Exception{
         if(ch<0||ch>3)throw new IOException("Feeder inválido.");
+        requireExternal();
         JSONObject fresh=status();idleForManual(fresh);
         if(!sensors(fresh)[ch])throw new IOException("Insira o filamento no feeder "+(ch+1)+" antes de associar o rolo.");
         for(int i=0;i<4;i++)if(i!=ch&&sensors(fresh)[i]&&spoolId(fresh,i)==selected.getInt("id"))throw new IOException("Este rolo já está associado ao feeder "+(i+1)+".");
-        request(printer,"/printer/spoollink/set",new JSONObject().put("channel",ch).put("info",spoolInfo(selected)).put("message","Spool Manager: associação manual"),printerKey);
+        request(printer,"/printer/spoollink/set",new JSONObject().put("channel",ch).put("info",spoolInfo(selected)).put("message","Spool Factory: associação manual"),printerKey);
     }
     static String feederScript(JSONObject fresh,int ch,boolean load)throws Exception{
         if(ch<0||ch>3)throw new IOException("Feeder inválido.");idleForManual(fresh);
@@ -102,6 +111,7 @@ final class Api {
         return "AUTO_FEEDING EXTRUDER="+ch+(load?" LOAD=1":" UNLOAD=1");
     }
     void feed(int ch,boolean load)throws Exception{
+        requireExternal();
         String script=feederScript(status(),ch,load);
         request(printer,"/printer/gcode/script",new JSONObject().put("script",script),printerKey,240000);
     }
@@ -113,19 +123,12 @@ final class Api {
     }
     static int spoolId(JSONObject s,int ch)throws Exception{return s.getJSONObject("print_task_config").getJSONArray("filament_spool_id").getInt(ch);}
     void inject(int ch,String uid,String type) throws Exception {
+        requireExternal();
         JSONArray bytes=new JSONArray();for(int i=0;i<uid.length();i+=2)bytes.put(Integer.parseInt(uid.substring(i,i+2),16));
         JSONObject info=new JSONObject().put("CARD_UID",bytes).put("CARD_TYPE",type);
         JSONObject r=(JSONObject)request(printer,"/printer/filament_detect/set",new JSONObject().put("channel",ch).put("info",info),printerKey);
         JSONObject result=r.optJSONObject("result");if(result==null)result=r;
         if("error".equals(result.optString("state")))throw new IOException(result.optString("message","Falha na leitura externa"));
-    }
-    void clear(int ch,String expectedUid,int expectedId)throws Exception{
-        JSONObject fresh=status();String actual=tagUid(fresh,ch);
-        if(printing(fresh)||sensors(fresh)[ch]||(!actual.isEmpty()&&!actual.equals(expectedUid))||spoolId(fresh,ch)!=expectedId)return;
-        request(printer,"/printer/filament_detect/set",new JSONObject().put("channel",ch),printerKey);
-        // SET_SPOOL_ID ...=0 also unlinks the UID in Spoolman. Clear only the
-        // channel's spool field, preserving the physical tag's inventory identity.
-        request(printer,"/printer/gcode/script",new JSONObject().put("script","SET_PRINT_FILAMENT_CONFIG CONFIG_EXTRUDER="+ch+" FILAMENT_SPOOL_ID=0 FORCE=1"),printerKey);
     }
     static String label(JSONObject spool)throws Exception {
         JSONObject f=spool.getJSONObject("filament");JSONObject v=f.optJSONObject("vendor");

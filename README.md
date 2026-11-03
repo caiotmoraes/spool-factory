@@ -1,10 +1,10 @@
-# Spool Manager
+# Spool Factory
 
 **Turn your Android phone into an external NFC spool reader for the Snapmaker U1.**
 
-[Download APK](https://github.com/caiotmoraes/spool-manager/releases/download/v1.3.0-beta.1/Spool-Manager.apk) · [Website](https://caiotmoraes.github.io/spool-manager/) · [Português](README.pt-BR.md) · [Report a bug](https://github.com/caiotmoraes/spool-manager/issues)
+[Download APK](https://github.com/caiotmoraes/spool-factory/releases/download/v1.4.0-beta.1/Spool-Factory.apk) · [Website](https://caiotmoraes.github.io/spool-factory/) · [Português](README.pt-BR.md) · [Report a bug](https://github.com/caiotmoraes/spool-factory/issues)
 
-<img src="docs/assets/preview.png" alt="Spool Manager pixel-art interface with a giant U1, factory workers and four color-coded spool cards. Illustrative data." width="440">
+<img src="docs/assets/preview.png" alt="Spool Factory pixel-art interface with a giant U1, factory workers and four color-coded spool cards. Illustrative data." width="440">
 
 ## What it does
 
@@ -30,9 +30,15 @@ Stock Snapmaker firmware is not supported. The integration was developed against
 
 The app does **not** install Spoolman, change your firmware, provision Tailscale or give access to someone else's printer.
 
+## Required reader mode
+
+Before using phone-based association, open the U1's Firmware Config and select **Filament Detection → External**. This stops OpenRFID's internal-reader updates that could erase phone-assigned spool identities during loading. The firmware applies this setting by restarting Klipper: change it only with the printer idle and no feeder operation running. The app verifies this setting before writing; it does not change firmware settings automatically.
+
+Version 1.4 removes background metadata repairs/clears and discards historical identity references created by earlier versions on its first start. Physical presence is shown separately from a leftover configured spool ID. Load/unload still require confirmation and an idle U1.
+
 ## Install and configure
 
-1. Download **Spool-Manager.apk** from the [release](https://github.com/caiotmoraes/spool-manager/releases/tag/v1.3.0-beta.1) to your phone and open it. Allow installation from your browser/file manager when Android asks.
+1. Download **Spool-Factory.apk** from the [release](https://github.com/caiotmoraes/spool-factory/releases/tag/v1.4.0-beta.1) to your phone and open it. Allow installation from your browser/file manager when Android asks.
 2. Open the app. The connection settings appear on first use. There are **no preconfigured printer IPs or accounts**.
 3. Enter your **U1 address** and **Spoolman address**. Examples: `192.168.1.50` and `http://spoolman.local:7912`. Bare IPs/hostnames are accepted; an explicit `https://` address is preserved. Use the actual port for your deployment.
 4. Enter API keys if your deployments require them. Tap **Testar**, then **Salvar**.

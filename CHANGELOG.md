@@ -1,6 +1,14 @@
 # Changelog
 
-## 1.3.0 — first public beta
+## 1.4.0 — Spool Factory / external-reader ownership fix
+
+- Renamed the app and repository to Spool Factory; Android package/signing identity retained for updates.
+- Require PAXX12 Filament Detection = External before metadata writes and physical controls.
+- Removed automatic background repairs and clears; internal OpenRFID “no tag” exports must not compete with phone-based association.
+- Discard historical identity references from earlier builds, and show physically empty feeders as empty.
+- Added native Firmware Config shortcut and regression tests for reader-mode enforcement.
+
+## 1.3.0 — public preparation
 
 - Blank connection setup on first launch; configurable U1 and Spoolman addresses and optional API keys.
 - Bare IP/hostname support, preserved explicit HTTPS, read-only connection test and settings available from the gear icon.

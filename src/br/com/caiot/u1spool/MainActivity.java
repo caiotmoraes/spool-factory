@@ -67,6 +67,7 @@ public class MainActivity extends Activity implements NfcAdapter.ReaderCallback 
                 case "scan":if(nfc==null||!nfc.isEnabled())startActivity(new Intent(Settings.ACTION_NFC_SETTINGS));else if(!SpoolService.running)connect();else toast("Aproxime a tag da traseira do celular.");break;
                 case "cancel":command("CANCEL");break;
                 case "settings":settings();break;
+                case "firmware":try{String base=Api.base(getSharedPreferences("config",0).getString("printer",""));startActivity(new Intent(Intent.ACTION_VIEW,android.net.Uri.parse(base+"/firmware-config/")));}catch(Exception e){settings();}break;
                 case "share":share();break;
             }
         });}
@@ -131,7 +132,7 @@ public class MainActivity extends Activity implements NfcAdapter.ReaderCallback 
         dialog.setOnShowListener(d->{dialog.getButton(-3).setOnClickListener(v->{try{
             Api candidate=new Api(p.getText().toString(),s.getText().toString(),pk.getText().toString().trim(),sk.getText().toString().trim());
             testStatus.setText("Testando U1 e Spoolman…");dialog.getButton(-3).setEnabled(false);
-            new Thread(()->{String result;try{candidate.status();int count=candidate.inventory().length();result="Conexão OK: U1 pronta; "+count+" rolos encontrados no Spoolman.";}catch(Exception e){result="Teste falhou: "+e.getMessage();}
+            new Thread(()->{String result;try{candidate.status();candidate.requireExternal();int count=candidate.inventory().length();result="Conexão OK: U1 em modo External; "+count+" rolos encontrados no Spoolman.";}catch(Exception e){result="Teste falhou: "+e.getMessage();}
                 final String message=result;runOnUiThread(()->{if(dialog.isShowing()){testStatus.setText(message);dialog.getButton(-3).setEnabled(true);}});
             },"connection-test").start();
         }catch(Exception e){testStatus.setText(e.getMessage());}});
@@ -146,8 +147,8 @@ public class MainActivity extends Activity implements NfcAdapter.ReaderCallback 
         text(box,label,13,MUTED,false);EditText e=new EditText(this);e.setSingleLine(true);e.setTextColor(TEXT);e.setText(value);e.setInputType(secret?129:17);box.addView(e);return e;
     }
     private void share(){
-        try{JSONObject d=new JSONObject(SpoolService.view);d.put("app","Spool Manager 1.3.0");d.put("device",Build.MANUFACTURER+" "+Build.MODEL);d.put("android",Build.VERSION.RELEASE);
-            Intent send=new Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_SUBJECT,"Diagnóstico Spool Manager").putExtra(Intent.EXTRA_TEXT,d.toString(2));startActivity(Intent.createChooser(send,"Compartilhar diagnóstico"));
+        try{JSONObject d=new JSONObject(SpoolService.view);d.put("app","Spool Factory 1.4.0");d.put("device",Build.MANUFACTURER+" "+Build.MODEL);d.put("android",Build.VERSION.RELEASE);
+            Intent send=new Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_SUBJECT,"Diagnóstico Spool Factory").putExtra(Intent.EXTRA_TEXT,d.toString(2));startActivity(Intent.createChooser(send,"Compartilhar diagnóstico"));
         }catch(Exception e){toast(e.getMessage());}
     }
     private void toast(String text){Toast.makeText(this,text,Toast.LENGTH_LONG).show();}

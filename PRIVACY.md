@@ -1,6 +1,6 @@
 # Privacy
 
-Spool Manager stores connection addresses, optional API keys, the spool inventory cache and recent association history inside the Android application's private storage. Android backup is disabled for this application.
+Spool Factory stores connection addresses, optional API keys, the spool inventory cache and recent association history inside the Android application's private storage. Android backup is disabled for this application.
 
 The app connects directly to the printer and Spoolman addresses you configure. It has no analytics SDK, advertising SDK, app account, remote relay or developer telemetry endpoint. The interface, illustrations and font are bundled in the APK and are not downloaded while you use it.
 
