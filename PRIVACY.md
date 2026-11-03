@@ -4,6 +4,8 @@ Spool Factory stores connection addresses, optional API keys, the spool inventor
 
 The app connects directly to the printer and Spoolman addresses you configure. It has no analytics SDK, advertising SDK, app account, remote relay or developer telemetry endpoint. The interface, illustrations and font are bundled in the APK and are not downloaded while you use it.
 
+The warehouse can create manufacturers, filament definitions and spools, update spool weight/location/comments, append NFC identifiers, and permanently delete a selected spool in the configured Spoolman instance after confirmation. Spool deletion removes its NFC associations but leaves the manufacturer and filament definition in the catalog. If needed, it creates the text field `card_uids`. These changes are stored on your Spoolman server; uninstalling the app does not remove them.
+
 NFC scanning reads the tag identifier. It does not write tags. A selected spool can be associated to a feeder through the printer's supported interfaces. Manual selection does not transfer tag identifiers between Spoolman records.
 
 API keys are stored in app-private preferences, not an Android Keystore-backed encrypted vault. Protect access to your device. HTTP may be necessary for local Moonraker/Spoolman deployments; use a trusted LAN or your own protected VPN. Tailscale is optional and is configured separately by each user. The application contains no default printer IP, VPN identity, account or access credential.

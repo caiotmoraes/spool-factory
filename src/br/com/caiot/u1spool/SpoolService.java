@@ -51,7 +51,7 @@ public class SpoolService extends Service {
         }catch(Exception e){try{ledger=new AssociationLedger("{}");}catch(Exception ignored){}}
         try{stock=new JSONArray(p.getString("stock","[]"));stockAt=p.getLong("stockAt",0);}catch(Exception ignored){}
         stockWork.scheduleWithFixedDelay(()->{try{
-            externalMode=api.externalMode();
+            try{externalMode=api.externalMode();}catch(Exception unavailable){externalMode=false;}
             JSONArray loaded=api.inventory();if(!alive)return;
             stock=loaded;stockAt=System.currentTimeMillis();stockError="";
             getSharedPreferences("config",0).edit().putString("stock",stock.toString()).putLong("stockAt",stockAt).apply();
@@ -120,10 +120,11 @@ public class SpoolService extends Service {
     private void scan(String u,String t,int g){
         if(manualOperation){message="Aguarde a operação física terminar antes de ler outra tag.";publish();return;}
         detector.cancel();verifyChannel=-1;manualVerify=false;uid=u;tagType=t;spool=null;armGeneration=g;
-        message="Identificando tag "+uid+"…";publish();
+        message="Identificando tag "+uid+"…";publish();String knownLabel="";
         try {
+            JSONObject found=api.lookup(uid);spool=found;
+            knownLabel=Api.label(found);message="Tag já cadastrada: "+knownLabel;publish();
             api.requireExternal();
-            JSONObject found=api.lookup(uid);
             JSONObject fresh=api.status();
             if(!current())return;
             if(Api.printing(fresh))throw new Exception("Impressora imprimindo ou pausada. Faça a troca após finalizar.");
@@ -136,7 +137,7 @@ public class SpoolService extends Service {
             expires=now()+timeout;detector.arm(sensors,now(),timeout);
             message="Rolo identificado. Insira o filamento no feeder desejado.";
             log("Lido "+Api.label(spool)+" · UID "+uid);publish();
-        }catch(Exception e){if(current()){cancel(e.getMessage());}}
+        }catch(Exception e){if(current()){cancel((!knownLabel.isEmpty()?"Tag já cadastrada: "+knownLabel+". ":"")+e.getMessage());}}
     }
     private void tick(){
         if(api==null||!alive||!running)return;

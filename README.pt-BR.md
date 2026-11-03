@@ -2,7 +2,7 @@
 
 **Seu celular Android como leitor NFC externo para a Snapmaker U1.**
 
-[Baixar APK](https://github.com/caiotmoraes/spool-factory/releases/download/v1.4.0-beta.1/Spool-Factory.apk) · [Página do projeto](https://caiotmoraes.github.io/spool-factory/) · [English](README.md) · [Relatar problema](https://github.com/caiotmoraes/spool-factory/issues)
+[Baixar APK](https://github.com/caiotmoraes/spool-factory/releases/download/v1.7.0-beta.1/Spool-Factory.apk) · [Página do projeto](https://caiotmoraes.github.io/spool-factory/) · [English](README.md) · [Relatar problema](https://github.com/caiotmoraes/spool-factory/issues)
 
 <img src="docs/assets/preview.png" alt="Interface pixel art do Spool Factory; cores e pesos ilustrativos." width="440">
 
@@ -29,7 +29,7 @@ A versão 1.4 remove regravações/limpezas automáticas em segundo plano e desc
 
 ## Instalar e configurar os IPs
 
-1. Baixe **Spool-Factory.apk** na [release pública](https://github.com/caiotmoraes/spool-factory/releases/tag/v1.4.0-beta.1) e abra o arquivo no celular.
+1. Baixe **Spool-Factory.apk** na [release pública](https://github.com/caiotmoraes/spool-factory/releases/tag/v1.7.0-beta.1) e abra o arquivo no celular.
 2. Autorize a instalação pelo navegador/gerenciador quando o Android solicitar.
 3. Ao abrir, a configuração aparece automaticamente: **nenhum IP ou conta vem preenchido**.
 4. Informe o endereço da **sua U1** e do **seu Spoolman**. Exemplos: `192.168.1.50` e `http://spoolman.local:7912`. IP sem `http://` também funciona. Use a porta real do seu serviço.
@@ -68,3 +68,21 @@ Mantenha o monitor e a rede ativos durante a troca. NFC exige o app aberto; depo
 [Privacidade](PRIVACY.md) · [Compilar](BUILDING.md) · [Contribuir](CONTRIBUTING.md) · [Licença MIT](LICENSE) · [Créditos](THIRD_PARTY_NOTICES.md)
 
 Não publique chaves de API, IPs privados, UIDs ou diagnósticos sem revisão nas issues. O repositório e o APK não incluem a rede, conta ou endereço de impressora do autor.
+
+
+## Cadastro NFC no Armazém
+
+No **Armazém → Novo rolo / NFC**, leia a tag para consultar o Spoolman. O app informa se a tag está livre ou já identifica um rolo, incluindo arquivados, e bloqueia duplicatas. Escolha um filamento do catálogo ou cadastre fabricante, material, nome, cores, densidade e diâmetro. Informe peso líquido inicial/restante e local; confirme para salvar. Na ficha do rolo, é possível adicionar outra tag ou corrigir peso, local e observações.
+
+O Armazém pode funcionar só com o endereço do Spoolman, sem a impressora conectada. A associação a feeders continua específica da U1/paxx12. Ler NFC não descobre automaticamente material/cor de qualquer etiqueta e não grava conteúdo nela. Consultas falhas não são tratadas como tag livre.
+
+O Spoolman legado não oferece uma transação única para criar fabricante, filamento e rolo. Se a rede falhar, confira o estoque antes de repetir. Não há repetição automática de escritas nem transferência silenciosa de tags entre rolos. A verificação de duplicidade é preventiva e não bloqueia alterações simultâneas feitas por outros clientes.
+
+
+## Sala de Controle e exclusão
+
+A engrenagem abre a **Sala de Controle**, no visual pixel art, com testes independentes da U1 e do Spoolman. IPs, portas e chaves são configuráveis; chaves opcionais ficam na seção recolhida. O teste apenas consulta os serviços, sem mover a impressora.
+
+Para excluir um rolo, use **Armazém → Ver rolo → Excluir rolo do Spoolman** e digite o número exato na confirmação. É definitivo para esse cadastro e seus vínculos NFC; fabricante e tipo de filamento permanecem no catálogo. A exclusão fica bloqueada se o último estado recebido da U1 indicar o rolo em um feeder ou associação pendente. Retire o filamento e atualize a leitura antes de excluir; o app não conhece associações de outras impressoras.
+
+<img src="docs/assets/warehouse.png" alt="Armazém com dados ilustrativos" width="300"> <img src="docs/assets/control-room.png" alt="Sala de Controle com endereços de exemplo" width="300">

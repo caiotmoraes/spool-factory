@@ -2,7 +2,7 @@
 
 **Turn your Android phone into an external NFC spool reader for the Snapmaker U1.**
 
-[Download APK](https://github.com/caiotmoraes/spool-factory/releases/download/v1.4.0-beta.1/Spool-Factory.apk) · [Website](https://caiotmoraes.github.io/spool-factory/) · [Português](README.pt-BR.md) · [Report a bug](https://github.com/caiotmoraes/spool-factory/issues)
+[Download APK](https://github.com/caiotmoraes/spool-factory/releases/download/v1.7.0-beta.1/Spool-Factory.apk) · [Website](https://caiotmoraes.github.io/spool-factory/) · [Português](README.pt-BR.md) · [Report a bug](https://github.com/caiotmoraes/spool-factory/issues)
 
 <img src="docs/assets/preview.png" alt="Spool Factory pixel-art interface with a giant U1, factory workers and four color-coded spool cards. Illustrative data." width="440">
 
@@ -12,7 +12,10 @@
 - Waits for the **next U1 feeder that receives filament**, then associates the scanned spool with that feeder. No feeder selection is needed in automatic mode.
 - Shows the four feeder states, material, brand, colors and remaining spool weight when available.
 - Offers **manual spool selection, association, load and unload** through the U1's native commands, with explicit confirmation.
-- Includes searchable inventory, archived-spool filtering and local history.
+- Includes a pixel-art **Warehouse** with material/brand/location filters, low-stock view, spool details and compact layout, plus a searchable local history office.
+- Registers new spools in Spoolman from an NFC scan, showing an existing spool (including archived ones) before allowing a new registration. Choose a catalog filament or create a manufacturer and filament definition, including multiple colors.
+- Adds NFC tags to an existing spool and edits weight, location and notes. Permanent spool deletion requires the exact spool number and preserves the manufacturer/filament catalog.
+- Provides a themed **Control Room** with separate printer/Spoolman connection tests and optional API keys. The Warehouse can be used with Spoolman alone, without connecting a printer.
 - Uses an offline pixel-art factory interface with animated workers, a pause button and a layout for folded/unfolded screens.
 
 Designed for spools in a drybox below the printer, or as an alternative to reading tags at the built-in readers.
@@ -38,7 +41,7 @@ Version 1.4 removes background metadata repairs/clears and discards historical i
 
 ## Install and configure
 
-1. Download **Spool-Factory.apk** from the [release](https://github.com/caiotmoraes/spool-factory/releases/tag/v1.4.0-beta.1) to your phone and open it. Allow installation from your browser/file manager when Android asks.
+1. Download **Spool-Factory.apk** from the [release](https://github.com/caiotmoraes/spool-factory/releases/tag/v1.7.0-beta.1) to your phone and open it. Allow installation from your browser/file manager when Android asks.
 2. Open the app. The connection settings appear on first use. There are **no preconfigured printer IPs or accounts**.
 3. Enter your **U1 address** and **Spoolman address**. Examples: `192.168.1.50` and `http://spoolman.local:7912`. Bare IPs/hostnames are accepted; an explicit `https://` address is preserved. Use the actual port for your deployment.
 4. Enter API keys if your deployments require them. Tap **Testar**, then **Salvar**.
@@ -84,3 +87,19 @@ Keep the monitor and network connection active during changes. NFC reading requi
 Private signing keys, API keys and actual deployment addresses are not included. Official releases and locally compiled development builds use different signing keys unless you supply your own release key.
 
 Inspired by the external-reader workflow in [U1-ACR122U](https://github.com/DnG-Crafts/U1-ACR122U), using the [Extended Firmware external RFID contract](https://github.com/paxx12-snapmaker-u1/SnapmakerU1-Extended-Firmware/blob/develop/docs/design/filament_detect.md) and [Spoolman](https://github.com/Donkie/Spoolman). This is an independent community project.
+
+## Warehouse and NFC registration
+
+Open **Armazém → Novo rolo / NFC**. Scan a tag: the app queries Spoolman and shows its existing spool, or marks the tag free after a successful lookup. Existing/archived/conflicting bindings block a duplicate registration. NFC provides a UID; it does not automatically identify the material or color of an arbitrary tag and the app does not rewrite the tag.
+
+Select an existing filament or enter manufacturer, name/finish, material, up to five HEX colors, density and diameter. Enter initial/remaining **net filament weight** (without the empty spool), location and notes, then confirm saving. The app uses the SpoolLink-compatible text field `extra.card_uids`, creating the definition if needed. Existing tags and unrelated extra fields are preserved when adding a tag.
+
+In a spool's details, edit its weight/location/notes, add NFC, choose a feeder, or delete that spool. Leave the edit weight blank to preserve live consumption. Deletion asks for its exact number and is blocked for a spool still indicated in a feeder or pending association in the last U1 state received. The app does not know other printers' assignments. Deletion is permanent in Spoolman; it leaves the manufacturer and filament definition intact.
+
+Legacy Spoolman does not provide one transaction for manufacturer + filament + spool creation, nor a cross-client uniqueness lock for the custom UID field. After a network failure, refresh and inspect the stock before repeating. Writes are not retried automatically.
+
+## More views
+
+Screenshots below use illustrative inventory and connection addresses.
+
+<img src="docs/assets/warehouse.png" alt="Spool Factory Warehouse with sample inventory" width="300"> <img src="docs/assets/control-room.png" alt="Spool Factory themed connection settings with example addresses" width="300">

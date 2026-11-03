@@ -6,7 +6,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-final class Api {
+class Api {
     final String printer, spoolman, printerKey, spoolKey;
     Api(String p,String s,String pk,String sk) { printer=base(p); spoolman=base(s); printerKey=pk; spoolKey=sk; }
     static String base(String s) {
@@ -22,14 +22,19 @@ final class Api {
         return request(base,path,body,key,5000);
     }
     Object request(String base,String path,JSONObject body,String key,int timeout) throws Exception {
+        return requestMethod(base,path,body,key,timeout,body==null?"GET":"POST");
+    }
+    Object requestMethod(String base,String path,JSONObject body,String key,int timeout,String method) throws Exception {
         HttpURLConnection c=(HttpURLConnection)new URL(base+path).openConnection();
         c.setConnectTimeout(4000); c.setReadTimeout(timeout); c.setInstanceFollowRedirects(false);
         c.setRequestProperty("Accept","application/json");
         if(!key.isEmpty())c.setRequestProperty("X-Api-Key",key);
         try {
-            if(body!=null){c.setRequestMethod("POST");c.setDoOutput(true);c.setRequestProperty("Content-Type","application/json; charset=utf-8");try(OutputStream o=c.getOutputStream()){o.write(body.toString().getBytes(StandardCharsets.UTF_8));}}
+            c.setRequestMethod(method);
+            if(body!=null){c.setDoOutput(true);c.setRequestProperty("Content-Type","application/json; charset=utf-8");try(OutputStream o=c.getOutputStream()){o.write(body.toString().getBytes(StandardCharsets.UTF_8));}}
             int code=c.getResponseCode();
-            if(code<200||code>=300)throw new IOException("HTTP "+code+" em "+path.split("\\?")[0]+". Verifique conexão e autorização.");
+            if(code<200||code>=300)throw new IOException("HTTP "+code+" em "+path.split("\\?")[0]+(code==404?". Confira o endereço e a porta deste serviço nas configurações.":code==401||code==403?". Confira a chave API e a autorização.":". Verifique o serviço e tente atualizar."));
+            if(code==204)return new JSONObject();
             ByteArrayOutputStream out=new ByteArrayOutputStream();
             try(InputStream in=c.getInputStream()){byte[] b=new byte[8192];int n;while((n=in.read(b))!=-1){out.write(b,0,n);if(out.size()>8_000_000)throw new IOException("Resposta muito grande");}}
             Object v=new JSONTokener(out.toString("UTF-8")).nextValue();
@@ -58,19 +63,20 @@ final class Api {
     void requireExternal()throws Exception{if(!externalMode())throw new IOException("Selecione Filament Detection = External no Firmware Config antes de associar ou carregar rolos. Leitores internos podem apagar os dados.");}
     static String normalize(String s){return s.replaceAll("[^0-9A-Fa-f]", "").toUpperCase(Locale.ROOT);}
     static Set<String> uids(JSONObject spool) throws Exception {
-        Set<String> set=new HashSet<>();JSONObject ex=spool.optJSONObject("extra");if(ex==null)return set;
+        Set<String> set=new LinkedHashSet<>();JSONArray tags=spool.optJSONArray("tags");if(tags!=null)for(int i=0;i<tags.length();i++){JSONObject t=tags.optJSONObject(i);if(t!=null)set.add(normalize(t.optString("uid")));}JSONObject ex=spool.optJSONObject("extra");if(ex==null)return set;
         Object raw=ex.opt("card_uids");
         if(raw instanceof String){String r=((String)raw).trim();try{raw=new JSONTokener(r).nextValue();}catch(Exception ignored){raw=r;}}
         if(raw instanceof JSONArray){JSONArray a=(JSONArray)raw;for(int i=0;i<a.length();i++)set.add(normalize(a.getString(i)));}
-        else if(raw instanceof String)set.add(normalize((String)raw));
+        else if(raw instanceof String)for(String item:((String)raw).split("[,;\\s]+"))if(!item.isEmpty())set.add(normalize(item));
+        set.remove("");
         return set;
     }
     JSONObject lookup(String uid) throws Exception {
         JSONArray all=inventory();
         JSONObject found=null;
         for(int i=0;i<all.length();i++){JSONObject s=all.getJSONObject(i);if(uids(s).contains(uid)){if(found!=null)throw new IOException("UID duplicado no Spoolman. Corrija os cadastros antes de associar.");found=s;}}
-        if(found==null)throw new IOException("Tag não cadastrada no Spoolman: "+uid+". Cadastre pelo Spool Studio.");
-        if(found.optBoolean("archived"))throw new IOException("Este rolo está arquivado no Spoolman.");
+        if(found==null)throw new IOException("Tag não cadastrada no Spoolman: "+uid+". Use Novo rolo no Armazém para cadastrar.");
+        if(found.optBoolean("archived"))throw new IOException("Tag já cadastrada: "+label(found)+". Este rolo está arquivado no Spoolman.");
         return found;
     }
     JSONArray inventory() throws Exception {return (JSONArray)request(spoolman,"/api/v1/spool?allow_archived=true",null,spoolKey);}
