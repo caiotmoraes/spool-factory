@@ -2,7 +2,7 @@
 
 **Turn your Android phone into an external NFC spool reader for the Snapmaker U1.**
 
-[Download APK](https://github.com/caiotmoraes/spool-factory/releases/download/v1.7.0-beta.1/Spool-Factory.apk) · [Website](https://caiotmoraes.github.io/spool-factory/) · [Português](README.pt-BR.md) · [Report a bug](https://github.com/caiotmoraes/spool-factory/issues)
+[Download APK](https://github.com/caiotmoraes/spool-factory/releases/download/v1.8.0-beta.1/Spool-Factory.apk) · [Website](https://caiotmoraes.github.io/spool-factory/) · [Português](README.pt-BR.md) · [Report a bug](https://github.com/caiotmoraes/spool-factory/issues)
 
 <img src="docs/assets/preview.png" alt="Spool Factory pixel-art interface with a giant U1, factory workers and four color-coded spool cards. Illustrative data." width="440">
 
@@ -24,7 +24,7 @@ Designed for spools in a drybox below the printer, or as an alternative to readi
 
 | Component | Requirement |
 |---|---|
-| Phone | Android 8.0+ with NFC; UI is currently in Brazilian Portuguese |
+| Phone | Android 8.0+ with NFC; UI in English and Brazilian Portuguese |
 | Printer | Snapmaker U1 with compatible **PAXX12 Extended Firmware + SpoolLink** |
 | Inventory | A reachable Spoolman deployment; tags registered in `extra.card_uids` |
 | Network | Phone can reach both services through a trusted LAN **or your own VPN/Tailscale** |
@@ -41,7 +41,7 @@ Version 1.4 removes background metadata repairs/clears and discards historical i
 
 ## Install and configure
 
-1. Download **Spool-Factory.apk** from the [release](https://github.com/caiotmoraes/spool-factory/releases/tag/v1.7.0-beta.1) to your phone and open it. Allow installation from your browser/file manager when Android asks.
+1. Download **Spool-Factory.apk** from the [release](https://github.com/caiotmoraes/spool-factory/releases/tag/v1.8.0-beta.1) to your phone and open it. Allow installation from your browser/file manager when Android asks.
 2. Open the app. The connection settings appear on first use. There are **no preconfigured printer IPs or accounts**.
 3. Enter your **U1 address** and **Spoolman address**. Examples: `192.168.1.50` and `http://spoolman.local:7912`. Bare IPs/hostnames are accepted; an explicit `https://` address is preserved. Use the actual port for your deployment.
 4. Enter API keys if your deployments require them. Tap **Testar**, then **Salvar**.
@@ -102,4 +102,12 @@ Legacy Spoolman does not provide one transaction for manufacturer + filament + s
 
 Screenshots below use illustrative inventory and connection addresses.
 
-<img src="docs/assets/warehouse.png" alt="Spool Factory Warehouse with sample inventory" width="300"> <img src="docs/assets/control-room.png" alt="Spool Factory themed connection settings with example addresses" width="300">
+<img src="docs/assets/warehouse-en.png" alt="Spool Factory Warehouse with sample inventory" width="300"> <img src="docs/assets/control-room-en.png" alt="Spool Factory themed connection settings with example addresses" width="300">
+
+## Language
+
+Version 1.8 adds **English and Brazilian Portuguese**, including native confirmations, notifications, app status/error messages and local history display. Automatic mode follows the phone: Portuguese locales use Portuguese and other languages fall back to English. Choose **gear → Language → English / Português (Brasil) / Automatic → Save** to override it. Closing settings without saving cancels the language preview.
+
+Spoolman names, brands, locations, notes, spool IDs and NFC UIDs are preserved as registered. A language-only settings save keeps the printer connection and pending assignment. Arbitrary server/firmware responses remain in their original language. Original stored history dates stay as recorded.
+
+See [TRANSLATING.md](TRANSLATING.md) for the shared translation catalog and tests.

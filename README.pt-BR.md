@@ -2,7 +2,7 @@
 
 **Seu celular Android como leitor NFC externo para a Snapmaker U1.**
 
-[Baixar APK](https://github.com/caiotmoraes/spool-factory/releases/download/v1.7.0-beta.1/Spool-Factory.apk) · [Página do projeto](https://caiotmoraes.github.io/spool-factory/) · [English](README.md) · [Relatar problema](https://github.com/caiotmoraes/spool-factory/issues)
+[Baixar APK](https://github.com/caiotmoraes/spool-factory/releases/download/v1.8.0-beta.1/Spool-Factory.apk) · [Página do projeto](https://caiotmoraes.github.io/spool-factory/) · [English](README.md) · [Relatar problema](https://github.com/caiotmoraes/spool-factory/issues)
 
 <img src="docs/assets/preview.png" alt="Interface pixel art do Spool Factory; cores e pesos ilustrativos." width="440">
 
@@ -14,7 +14,7 @@ Também inclui escolha manual do rolo/feeder, associação, carregar/retirar fil
 
 ## O que você precisa
 
-- Celular Android 8.0+ com NFC. A interface está em português brasileiro.
+- Celular Android 8.0+ com NFC. Interface em português brasileiro e inglês.
 - Snapmaker U1 com **PAXX12 Extended Firmware e SpoolLink** compatíveis; firmware original da Snapmaker não é suportado.
 - Spoolman acessível e tags cadastradas em `extra.card_uids`.
 - Celular com acesso à U1 e ao Spoolman por rede local **ou sua própria VPN/Tailscale**.
@@ -29,7 +29,7 @@ A versão 1.4 remove regravações/limpezas automáticas em segundo plano e desc
 
 ## Instalar e configurar os IPs
 
-1. Baixe **Spool-Factory.apk** na [release pública](https://github.com/caiotmoraes/spool-factory/releases/tag/v1.7.0-beta.1) e abra o arquivo no celular.
+1. Baixe **Spool-Factory.apk** na [release pública](https://github.com/caiotmoraes/spool-factory/releases/tag/v1.8.0-beta.1) e abra o arquivo no celular.
 2. Autorize a instalação pelo navegador/gerenciador quando o Android solicitar.
 3. Ao abrir, a configuração aparece automaticamente: **nenhum IP ou conta vem preenchido**.
 4. Informe o endereço da **sua U1** e do **seu Spoolman**. Exemplos: `192.168.1.50` e `http://spoolman.local:7912`. IP sem `http://` também funciona. Use a porta real do seu serviço.
@@ -86,3 +86,10 @@ A engrenagem abre a **Sala de Controle**, no visual pixel art, com testes indepe
 Para excluir um rolo, use **Armazém → Ver rolo → Excluir rolo do Spoolman** e digite o número exato na confirmação. É definitivo para esse cadastro e seus vínculos NFC; fabricante e tipo de filamento permanecem no catálogo. A exclusão fica bloqueada se o último estado recebido da U1 indicar o rolo em um feeder ou associação pendente. Retire o filamento e atualize a leitura antes de excluir; o app não conhece associações de outras impressoras.
 
 <img src="docs/assets/warehouse.png" alt="Armazém com dados ilustrativos" width="300"> <img src="docs/assets/control-room.png" alt="Sala de Controle com endereços de exemplo" width="300">
+
+
+## Idioma
+
+A partir da versão 1.8, o app oferece **inglês e português brasileiro**, incluindo confirmações nativas, notificações e mensagens do aplicativo. O modo Automático segue o celular: português quando configurado em português, inglês nos demais idiomas. Para escolher, abra **engrenagem → Idioma → Português / English / Automático → Salvar**. Fechar sem salvar cancela a prévia.
+
+Os dados dos rolos no Spoolman permanecem como você cadastrou. Mudar apenas o idioma mantém a conexão e a associação pendente. Respostas arbitrárias do servidor/firmware e datas históricas gravadas como texto mantêm a forma original.

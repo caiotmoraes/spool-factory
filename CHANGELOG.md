@@ -1,3 +1,11 @@
+## 1.8.0 — public beta
+
+- Added English and Brazilian Portuguese, automatic phone-language selection and a saved Control Room language selector.
+- Localized interface, native confirmations, notifications, status/error messages and canonical local history display.
+- Preserved all Spoolman names, notes, identifiers and protocol values; localized only presentation text and number/date formatting for live values.
+- Language-only settings saves preserve the printer connection and pending assignment.
+- Added native and responsive UI regressions for automatic selection, preview cancellation, saved override and opaque catalog labels.
+
 ## 1.7.0 — public beta
 
 - Replaced native settings dialog with themed Control Room, separate service test results, optional masked API keys and insertion timeout controls.

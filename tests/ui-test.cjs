@@ -9,7 +9,7 @@ stock.push({id:50,archived:true,remaining_weight:null,filament:{name:'Arquivado'
 const snapshot={connected:true,running:true,nfc:true,externalMode:true,status:fixture,stock,stockAt:Date.now(),history:['02/11 18:00 · Associado ao feeder 3: Masterprint PETG'],message:'Conectado. Aproxime a tag de um rolo.'};
 (async()=>{await new Promise(r=>server.listen(0,'127.0.0.1',r));let browser;try{
  browser=await chromium.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true,args:['--disable-gpu']});
- const page=await browser.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ const page=await browser.newPage({locale:"pt-BR"});const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.addInitScript(()=>{window.Native={settingsForm:(op,json)=>{window.settingsCall={op,data:JSON.parse(json)};},previewDelete:id=>{window.deletePreviewId=id;},deleteSpool:id=>{window.deletedId=id;},catalog:()=>{window.catalogRequested=true;},registration:v=>{window.registrationMode=v;},inspectTag:uid=>{window.inspectedUid=uid;},saveInventory:json=>{window.inventoryPayload=JSON.parse(json);},action:n=>{window.lastAction=n;},manual:(op,ch,id)=>{window.lastManual=[op,ch,id];}};});
  await page.goto('http://127.0.0.1:'+server.address().port);await page.evaluate(()=>document.fonts.ready);
  for(const [name,w,h] of [['fold-fechado',390,844],['fold-aberto',768,900],['compacto',320,740]]){

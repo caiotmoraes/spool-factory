@@ -18,8 +18,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
-          if gh release view v1.7.0-beta.1 >/dev/null 2>&1; then
+          if gh release view v1.8.0-beta.1 >/dev/null 2>&1; then
             echo "Release already exists; existing assets were preserved."
           else
-            gh release create v1.7.0-beta.1 downloads/Spool-Factory.apk downloads/SHA256SUMS.txt --target "$GITHUB_SHA" --prerelease --title "Spool Factory 1.7.0 — public beta" --notes-file RELEASE_NOTES.md
+            gh release create v1.8.0-beta.1 downloads/Spool-Factory.apk downloads/SHA256SUMS.txt --target "$GITHUB_SHA" --prerelease --title "Spool Factory 1.8.0 — public beta" --notes-file RELEASE_NOTES.md
           fi

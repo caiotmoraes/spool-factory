@@ -1,5 +1,7 @@
 $ErrorActionPreference='Stop'
 Set-Location -LiteralPath $PSScriptRoot
+$translationCatalog=Get-Content -LiteralPath 'assets/translations.json' -Raw
+("'use strict';`nwindow.TRANSLATIONS="+$translationCatalog.Trim()+";`n") | Set-Content -LiteralPath 'assets/i18n-data.js' -Encoding utf8
 $toolsRoot=if($env:SPOOL_TOOLS_DIR){$env:SPOOL_TOOLS_DIR}else{Join-Path $PSScriptRoot 'tools'}
 $jdk=(Get-ChildItem -LiteralPath "$toolsRoot/jdk" -Directory | Select-Object -First 1).FullName
 $bt=(Get-ChildItem -LiteralPath "$toolsRoot/build" -Directory | Select-Object -First 1).FullName

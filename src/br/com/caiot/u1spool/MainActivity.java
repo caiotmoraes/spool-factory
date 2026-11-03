@@ -42,7 +42,7 @@ public class MainActivity extends Activity implements NfcAdapter.ReaderCallback 
     private int dp(int v){return (int)(v*getResources().getDisplayMetrics().density+.5f);}
     private final Runnable refresh=new Runnable(){@Override public void run(){render();ui.postDelayed(this,500);}};
     @Override public void onCreate(Bundle b){
-        super.onCreate(b);nfc=NfcAdapter.getDefaultAdapter(this);
+        super.onCreate(b);try{L10n.load(getAssets().open("translations.json"));}catch(Exception e){android.util.Log.e("SpoolFactory","Localization unavailable",e);}applyLanguage();nfc=NfcAdapter.getDefaultAdapter(this);
         getWindow().setStatusBarColor(BG);getWindow().setNavigationBarColor(BG);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         web=new WebView(this);web.setBackgroundColor(BG);setContentView(web);
@@ -72,10 +72,9 @@ public class MainActivity extends Activity implements NfcAdapter.ReaderCallback 
                 if(inventoryBusy)throw new Exception("Aguarde terminar o salvamento no Spoolman.");
                 JSONObject data=ConnectionConfig.validate(new JSONObject(raw));
                 if("save".equals(operation)){
-                    stopService(new Intent(MainActivity.this,SpoolService.class));
-                    SharedPreferences p=getSharedPreferences("config",0);boolean changed=!p.getString("spoolman","").equals(data.getString("spoolman"));
-                    SharedPreferences.Editor editor=p.edit().putString("printer",data.getString("printer")).putString("spoolman",data.getString("spoolman")).putString("printerKey",data.getString("printerKey")).putString("spoolKey",data.getString("spoolKey")).putInt("timeout",data.getInt("timeout"));if(changed)editor.remove("stock").remove("stockAt");editor.apply();
-                    managerStock=null;managerStockAt=0;registrationMode=false;settingsResult(new JSONObject().put("ok",true).put("saved",true).put("message","Configurações salvas. Conecte a fábrica ou atualize o Armazém."));render();
+                    SharedPreferences p=getSharedPreferences("config",0);boolean networkChanged=!p.getString("printer","").equals(data.getString("printer"))||!p.getString("spoolman","").equals(data.getString("spoolman"))||!p.getString("printerKey","").equals(data.getString("printerKey"))||!p.getString("spoolKey","").equals(data.getString("spoolKey"));if(networkChanged)stopService(new Intent(MainActivity.this,SpoolService.class));boolean changed=!p.getString("spoolman","").equals(data.getString("spoolman"));
+                    SharedPreferences.Editor editor=p.edit().putString("printer",data.getString("printer")).putString("spoolman",data.getString("spoolman")).putString("printerKey",data.getString("printerKey")).putString("spoolKey",data.getString("spoolKey")).putInt("timeout",data.getInt("timeout")).putString("language",data.getString("language"));if(changed)editor.remove("stock").remove("stockAt");editor.apply();applyLanguage();
+                    managerStock=null;managerStockAt=0;registrationMode=false;settingsResult(new JSONObject().put("ok",true).put("saved",true).put("message",networkChanged?"Configurações salvas. Conecte a fábrica ou atualize o Armazém.":"Configurações salvas."));render();
                 }else if("test".equals(operation)){
                     inventoryWork.execute(()->{JSONObject result=new JSONObject();try{
                         String printer=data.getString("printer"),spoolman=data.getString("spoolman");Api candidate=new Api(printer.isEmpty()?spoolman:printer,spoolman,data.getString("printerKey"),data.getString("spoolKey"));
@@ -116,7 +115,7 @@ public class MainActivity extends Activity implements NfcAdapter.ReaderCallback 
             if(inventoryBusy){try{inventoryResult(new JSONObject().put("ok",false).put("message","Aguarde o Spoolman terminar a operação."));}catch(Exception ignored){}return;}
             final JSONObject data;final Api api;try{if(raw.length()>12000)throw new Exception("Formulário inválido.");data=new JSONObject(raw);api=inventoryApi();}catch(Exception e){inventoryError(e);return;}
             String operation=data.optString("mode"),title="create".equals(operation)?"Cadastrar novo rolo":"bind".equals(operation)?"Vincular NFC ao rolo #"+data.optInt("id"):"Atualizar rolo #"+data.optInt("id");
-            new AlertDialog.Builder(MainActivity.this).setTitle(title).setMessage("Salvar os dados no seu Spoolman? Isso não movimenta a impressora nem grava conteúdo na tag NFC.").setNegativeButton("Voltar",(d,w)->{try{inventoryResult(new JSONObject().put("cancelled",true));}catch(Exception ignored){}}).setPositiveButton("Salvar",(d,w)->{
+            new AlertDialog.Builder(MainActivity.this).setTitle(L10n.t(title)).setMessage(L10n.t("Salvar os dados no seu Spoolman? Isso não movimenta a impressora nem grava conteúdo na tag NFC.")).setNegativeButton(L10n.t("Voltar"),(d,w)->{try{inventoryResult(new JSONObject().put("cancelled",true));}catch(Exception ignored){}}).setPositiveButton(L10n.t("Salvar"),(d,w)->{
                 inventoryBusy=true;inventoryWork.execute(()->{JSONObject result=new JSONObject();try{
                     JSONObject saved=new InventoryManager(api).save(data);result.put("ok",true).put("saved",saved).put("message","Rolo #"+saved.getInt("id")+" salvo no Spoolman.");
                     try{refreshInventory(api);}catch(Exception e){result.put("message","Rolo salvo. Atualize o estoque para confirmar os dados mais recentes.");}
@@ -130,7 +129,7 @@ public class MainActivity extends Activity implements NfcAdapter.ReaderCallback 
             if("ASSIGN".equals(operation)&&spoolId<=0){toast("Escolha um rolo do estoque.");return;}
             String title="ASSIGN".equals(operation)?"Associar rolo #"+spoolId+" ao feeder "+(channel+1):("LOAD".equals(operation)?"Carregar":"Retirar")+" filamento do feeder "+(channel+1);
             String detail="ASSIGN".equals(operation)?"Confirme que este é o rolo conectado à entrada escolhida. A associação não transfere nem regrava tags NFC.":"A U1 pode aquecer o bico e movimentar as cabeças e o filamento. Confira a área da impressora antes de iniciar.";
-            new AlertDialog.Builder(MainActivity.this).setTitle(title).setMessage(detail).setNegativeButton("Voltar",null).setPositiveButton("Confirmar",(d,w)->startService(new Intent(MainActivity.this,SpoolService.class).setAction(operation).putExtra("channel",channel).putExtra("spool_id",spoolId))).show();
+            new AlertDialog.Builder(MainActivity.this).setTitle(L10n.t(title)).setMessage(L10n.t(detail)).setNegativeButton(L10n.t("Voltar"),null).setPositiveButton(L10n.t("Confirmar"),(d,w)->startService(new Intent(MainActivity.this,SpoolService.class).setAction(operation).putExtra("channel",channel).putExtra("spool_id",spoolId))).show();
         });}
         @JavascriptInterface public void action(String name){runOnUiThread(()->{
             switch(name){
@@ -174,14 +173,15 @@ public class MainActivity extends Activity implements NfcAdapter.ReaderCallback 
             v.put("running",active).put("connected",active&&SystemClock.elapsedRealtime()-v.optLong("statusAt",0)<4000).put("nfc",nfc!=null&&nfc.isEnabled());
             if(!active){v.put("armed",false).put("manualOperation",false);v.put("stock",new JSONArray(p.getString("stock","[]"))).put("stockAt",p.getLong("stockAt",0));v.put("history",new JSONArray(Arrays.asList(p.getString("history","").split("\\n"))));}
             if(managerStock!=null&&managerStockAt>=v.optLong("stockAt",0))v.put("stock",managerStock).put("stockAt",managerStockAt);
-            v.put("inventoryBusy",inventoryBusy);
+            v.put("inventoryBusy",inventoryBusy).put("languagePreference",p.getString("language","auto")).put("language",L10n.resolve(p.getString("language","auto"),Locale.getDefault().getLanguage()));
             web.evaluateJavascript("window.updateApp("+v.toString()+");",null);
         }catch(Exception e){android.util.Log.e("SpoolManager","Falha ao atualizar tela",e);}
     }
+    private void applyLanguage(){L10n.set(getSharedPreferences("config",0).getString("language","auto"),Locale.getDefault().getLanguage());}
     private void settings(){
         if(!ready){settingsPending=true;return;}
         SharedPreferences p=getSharedPreferences("config",0);
-        try{JSONObject data=new JSONObject().put("printer",p.getString("printer","")).put("spoolman",p.getString("spoolman","")).put("printerKey",p.getString("printerKey","")).put("spoolKey",p.getString("spoolKey","")).put("timeout",p.getInt("timeout",180));
+        try{JSONObject data=new JSONObject().put("printer",p.getString("printer","")).put("spoolman",p.getString("spoolman","")).put("printerKey",p.getString("printerKey","")).put("spoolKey",p.getString("spoolKey","")).put("timeout",p.getInt("timeout",180)).put("languagePreference",p.getString("language","auto")).put("language",L10n.resolve(p.getString("language","auto"),Locale.getDefault().getLanguage())).put("systemLanguage",Locale.getDefault().getLanguage());
             web.evaluateJavascript("window.openSettings("+data.toString()+");",null);
         }catch(Exception e){toast(e.getMessage());}
     }
@@ -192,9 +192,9 @@ public class MainActivity extends Activity implements NfcAdapter.ReaderCallback 
         return view.optBoolean("armed")&&view.optJSONObject("spool")!=null&&view.getJSONObject("spool").optInt("id")==id;
     }
     private void share(){
-        try{JSONObject d=new JSONObject(SpoolService.view);d.put("app","Spool Factory 1.7.0");d.put("device",Build.MANUFACTURER+" "+Build.MODEL);d.put("android",Build.VERSION.RELEASE);
-            Intent send=new Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_SUBJECT,"Diagnóstico Spool Factory").putExtra(Intent.EXTRA_TEXT,d.toString(2));startActivity(Intent.createChooser(send,"Compartilhar diagnóstico"));
+        try{JSONObject d=new JSONObject(SpoolService.view);d.put("app","Spool Factory 1.8.0");d.put("device",Build.MANUFACTURER+" "+Build.MODEL);d.put("android",Build.VERSION.RELEASE);
+            Intent send=new Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_SUBJECT,L10n.t("Diagnóstico Spool Factory")).putExtra(Intent.EXTRA_TEXT,d.toString(2));startActivity(Intent.createChooser(send,L10n.t("Compartilhar diagnóstico")));
         }catch(Exception e){toast(e.getMessage());}
     }
-    private void toast(String text){Toast.makeText(this,text,Toast.LENGTH_LONG).show();}
+    private void toast(String text){Toast.makeText(this,L10n.t(text),Toast.LENGTH_LONG).show();}
 }

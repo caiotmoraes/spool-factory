@@ -34,9 +34,9 @@ public class SpoolService extends Service {
     private PowerManager.WakeLock wake;
     private long now(){return SystemClock.elapsedRealtime();}
     @Override public void onCreate(){
-        super.onCreate();alive=true;running=true;
+        super.onCreate();try{L10n.load(getAssets().open("translations.json"));}catch(Exception e){android.util.Log.e("SpoolFactory","Localization unavailable",e);}L10n.set(getSharedPreferences("config",0).getString("language","auto"),Locale.getDefault().getLanguage());alive=true;running=true;
         NotificationManager nm=getSystemService(NotificationManager.class);
-        nm.createNotificationChannel(new NotificationChannel("monitor","Leitura e associação de rolos",NotificationManager.IMPORTANCE_LOW));
+        nm.createNotificationChannel(new NotificationChannel("monitor",L10n.t("Leitura e associação de rolos"),NotificationManager.IMPORTANCE_LOW));
         startForeground(31,notification("Monitorando feeders da U1"));
         wake=((PowerManager)getSystemService(POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"U1Spool:monitor");
         wake.acquire(12*60*60*1000L);
@@ -63,7 +63,7 @@ public class SpoolService extends Service {
         PendingIntent pi=PendingIntent.getActivity(this,0,open,PendingIntent.FLAG_IMMUTABLE|PendingIntent.FLAG_UPDATE_CURRENT);
         Intent stop=new Intent(this,SpoolService.class).setAction("STOP");
         PendingIntent sp=PendingIntent.getService(this,1,stop,PendingIntent.FLAG_IMMUTABLE|PendingIntent.FLAG_UPDATE_CURRENT);
-        return new Notification.Builder(this,"monitor").setSmallIcon(br.com.caiot.u1spool.R.drawable.ic_spool).setContentTitle("Spool Factory").setContentText(text).setContentIntent(pi).setOngoing(true).addAction(new Notification.Action.Builder(null,"Parar",sp).build()).build();
+        return new Notification.Builder(this,"monitor").setSmallIcon(br.com.caiot.u1spool.R.drawable.ic_spool).setContentTitle("Spool Factory").setContentText(L10n.t(text)).setContentIntent(pi).setOngoing(true).addAction(new Notification.Action.Builder(null,L10n.t("Parar"),sp).build()).build();
     }
     @Override public int onStartCommand(Intent intent,int flags,int id){
         String action=intent==null?"":intent.getAction();

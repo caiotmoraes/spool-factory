@@ -1,8 +1,15 @@
-# Spool Factory 1.7.0 — public beta
+# Spool Factory 1.8.0 — English + Português
 
-Android NFC filament management with Spoolman and Snapmaker U1 + paxx12 Extended Firmware / SpoolLink. UI currently in Brazilian Portuguese.
+Android NFC filament management with Spoolman and Snapmaker U1 + paxx12 Extended Firmware / SpoolLink. UI available in English and Brazilian Portuguese.
 
-## New since 1.4
+## New in 1.8
+- English and Brazilian Portuguese across screens, native confirmations, notifications and known app status/error messages.
+- Automatic phone-language selection, with saved English/Portuguese/Automatic override in the Control Room. Select the language and tap Save; closing without saving cancels the preview.
+- Spoolman names, notes, colors/IDs/UIDs and protocol values remain unchanged. Only presentation text and live number/date formatting are localized.
+- Language-only settings saves preserve the connection and pending assignment. Arbitrary firmware/server messages and original stored history dates retain their original text.
+- Shared offline translation catalog and regression tests for both languages and 320/390/768 px layouts.
+
+## Included from 1.7
 - Warehouse with pixel-art shelves/workers, real inventory colors, material/brand/location filters, weight sorting, low-stock view, compact layout and spool details.
 - NFC-assisted spool registration: live lookup shows an existing spool (including archived ones), otherwise a successful lookup unlocks registration. Select an existing filament or create manufacturer/material/color definitions, including multicolor.
 - Add another NFC tag, edit weight/location/notes, and delete an exact spool after number confirmation. Deletion preserves manufacturer/filament definitions and is blocked for a spool indicated in a U1 feeder or pending association in the latest received state.
