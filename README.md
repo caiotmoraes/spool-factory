@@ -4,10 +4,30 @@
 
 [Download APK](https://github.com/caiotmoraes/spool-factory/releases/download/v1.8.0-beta.1/Spool-Factory.apk) · [Website](https://caiotmoraes.github.io/spool-factory/) · [Português](README.pt-BR.md) · [Report a bug](https://github.com/caiotmoraes/spool-factory/issues)
 
-> **2.0.0 (local build, not yet released):** same look, tabs, flows and texts as the U1 Factory Display (U1 Spool Spec v1) — light theme, Home/Control/Warehouse/NFC/Settings, automatic U1 discovery and Spoolman through the U1 proxy. See [CHANGELOG.md](CHANGELOG.md). The pixel-art description below refers to 1.8.
-
+> **2.0.0:** same look, tabs, flows and texts as [U1 Factory Display](https://github.com/caiotmoraes/u1-factory-display) v0.7.0 (U1 Spool Spec v1) — light theme, Home/Control/Warehouse/NFC/Settings, automatic U1 discovery and Spoolman through the U1 proxy. See [CHANGELOG.md](CHANGELOG.md). The signed APK is not in a GitHub Release yet (source is tagged `v2.0.0`). The pixel-art description and preview below still refer to 1.8.
 
 <img src="docs/assets/preview.png" alt="Spool Factory pixel-art interface with a giant U1, factory workers and four color-coded spool cards. Illustrative data." width="440">
+
+## Ecosystem
+
+The app and the U1 Factory Display are a pair: same flows, copy (`spec/strings.json`, pt and en) and canonical `card_uids` format (`"A,B"`, uppercase hex). Compatible versions: **app 2.0.0 ↔ display v0.7.0**.
+
+- This repo: Android app that uses the phone's NFC reader.
+- Companion display: [U1 Factory Display](https://github.com/caiotmoraes/u1-factory-display) — Waveshare ESP32-S3 panel (Wi-Fi + PN532), the same five tabs.
+
+Both talk to the Snapmaker U1 over Moonraker (`:7125`), using the Spoolman proxy and SpoolLink.
+
+```mermaid
+flowchart LR
+  U1["U1<br/>Klipper / Moonraker :7125<br/>+ Spoolman proxy + SpoolLink"]
+  D["U1 Factory Display v0.7.0<br/>ESP32-S3 · Wi-Fi · PN532 NFC"]
+  A["Spool Factory 2.0.0<br/>Android · phone NFC"]
+  S["shared spec/<br/>strings.json<br/>card_uids format A,B"]
+  D --> U1
+  A --> U1
+  D --- S
+  A --- S
+```
 
 ## What it does
 

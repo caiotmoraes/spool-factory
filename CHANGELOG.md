@@ -8,6 +8,7 @@
 - Carregar/retirar não exige mais o modo External (igual ao display); gravar tag (`filament_detect/set`) e `spoollink/set` continuam exigindo.
 - Tag desconhecida: "Cadastrar rolo" ou "Associar esta tag" direto da leitura. Cadastro de rolo com tag opcional.
 - `build.sh` para Linux/macOS (equivalente a setup.ps1 + build.ps1); testes com os fixtures da Spec v1 e teste de UI no Chromium.
+- README (en e pt-BR): seção Ecossistema com o [U1 Factory Display](https://github.com/caiotmoraes/u1-factory-display) v0.7.0, diagrama e a Spec compartilhada.
 
 ## 1.8.0 — public beta
 
