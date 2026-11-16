@@ -1,3 +1,8 @@
+## 2.0.2 — correção de abertura
+
+- O app fechava ao abrir no Android 15/16: o controlador das barras era pedido antes de a tela existir. Agora é configurado depois do `setContentView`.
+- `build.ps1`: assets em subpastas (fontes) eram empacotados com `\` no Windows e não carregavam; os nomes agora usam `/`.
+
 ## 2.0.1 — área segura e chips no celular
 
 - Respeito à status bar e à barra de gestos no Android 15 (edge-to-edge): o conteúdo fica numa área já recuada (system bars + recorte + teclado), e o CSS usa `env(safe-area-inset-*)` com `viewport-fit=cover`.

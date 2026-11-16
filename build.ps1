@@ -23,7 +23,7 @@ Run "$jdk/bin/java.exe" @('-cp',"$bt/lib/d8.jar",'com.android.tools.r8.D8','--li
 Add-Type -AssemblyName System.IO.Compression
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $apk=[IO.Compression.ZipFile]::Open((Join-Path $PSScriptRoot 'build/unsigned.apk'),[IO.Compression.ZipArchiveMode]::Update)
-try{$old=$apk.GetEntry('classes.dex');if($old){$old.Delete()};[IO.Compression.ZipFileExtensions]::CreateEntryFromFile($apk,(Join-Path $PSScriptRoot 'build/dex/classes.dex'),'classes.dex') | Out-Null}finally{$apk.Dispose()}
+try{foreach($e in @($apk.Entries | Where-Object {$_.FullName.Contains('\')})){$name=$e.FullName.Replace('\','/');$src=$e.Open();$dst=$apk.CreateEntry($name).Open();try{$src.CopyTo($dst)}finally{$src.Dispose();$dst.Dispose()};$e.Delete()};$old=$apk.GetEntry('classes.dex');if($old){$old.Delete()};[IO.Compression.ZipFileExtensions]::CreateEntryFromFile($apk,(Join-Path $PSScriptRoot 'build/dex/classes.dex'),'classes.dex') | Out-Null}finally{$apk.Dispose()}
 Run "$bt/zipalign.exe" @('-f','-p','4','build/unsigned.apk','build/aligned.apk')
 $key=if($env:SPOOL_SIGNING_KEY){$env:SPOOL_SIGNING_KEY}else{Join-Path $PSScriptRoot 'signing/development.p12'}
 $alias=if($env:SPOOL_SIGNING_ALIAS){$env:SPOOL_SIGNING_ALIAS}else{'spool-factory'}
