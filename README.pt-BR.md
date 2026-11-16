@@ -4,6 +4,9 @@
 
 [Baixar APK](https://github.com/caiotmoraes/spool-factory/releases/download/v1.8.0-beta.1/Spool-Factory.apk) · [Página do projeto](https://caiotmoraes.github.io/spool-factory/) · [English](README.md) · [Relatar problema](https://github.com/caiotmoraes/spool-factory/issues)
 
+> **2.0.0 (build local, ainda não publicado):** mesmo visual, abas, fluxos e textos do U1 Factory Display (U1 Spool Spec v1) — tema claro, Início/Controle/Armazém/NFC/Ajustes, descoberta automática da U1 e Spoolman pelo proxy da U1. Veja [CHANGELOG.md](CHANGELOG.md). A descrição em pixel art abaixo é da 1.8.
+
+
 <img src="docs/assets/preview.png" alt="Interface pixel art do Spool Factory; cores e pesos ilustrativos." width="440">
 
 ## Para que serve

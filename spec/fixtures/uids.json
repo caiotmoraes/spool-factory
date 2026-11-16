@@ -1,0 +1,247 @@
+{
+ "card_uids_read": [
+  {
+   "name": "canonico",
+   "extra": "\"04A1B2C3D4E5F6,53B992B4\"",
+   "valid": [
+    "04A1B2C3D4E5F6",
+    "53B992B4"
+   ],
+   "invalid": []
+  },
+  {
+   "name": "lista-json",
+   "extra": "[\"53f595b4950001\",\"04a1b2c3\"]",
+   "valid": [
+    "53F595B4950001",
+    "04A1B2C3"
+   ],
+   "invalid": []
+  },
+  {
+   "name": "texto-com-lista",
+   "extra": "\"[\\\"53F595B4950001\\\"]\"",
+   "valid": [
+    "53F595B4950001"
+   ],
+   "invalid": []
+  },
+  {
+   "name": "legado-cru",
+   "extra": "53:F5:95:B4:95:00:01; 04a1b2c3",
+   "valid": [
+    "53F595B4950001",
+    "04A1B2C3"
+   ],
+   "invalid": []
+  },
+  {
+   "name": "espacos",
+   "extra": "\"04A1B2C3 AABBCCDD\"",
+   "valid": [
+    "04A1B2C3",
+    "AABBCCDD"
+   ],
+   "invalid": []
+  },
+  {
+   "name": "minusculas",
+   "extra": "\"533f95b4950001\"",
+   "valid": [
+    "533F95B4950001"
+   ],
+   "invalid": []
+  },
+  {
+   "name": "invalido",
+   "extra": "\"ABC,04A1B2C3\"",
+   "valid": [
+    "04A1B2C3"
+   ],
+   "invalid": [
+    "ABC"
+   ]
+  },
+  {
+   "name": "vazio",
+   "extra": "\"\"",
+   "valid": [],
+   "invalid": []
+  },
+  {
+   "name": "ausente",
+   "extra": null,
+   "valid": [],
+   "invalid": []
+  },
+  {
+   "name": "duplicado",
+   "extra": "\"04A1B2C3,04a1b2c3\"",
+   "valid": [
+    "04A1B2C3"
+   ],
+   "invalid": []
+  },
+  {
+   "name": "tags",
+   "extra": null,
+   "tags": [
+    "04-a1-b2-c3"
+   ],
+   "valid": [
+    "04A1B2C3"
+   ],
+   "invalid": []
+  },
+  {
+   "name": "oito-tags-7-bytes",
+   "extra": "\"04A1B2C3D4E5F0,04A1B2C3D4E5F1,04A1B2C3D4E5F2,04A1B2C3D4E5F3,04A1B2C3D4E5F4,04A1B2C3D4E5F5,04A1B2C3D4E5F6,04A1B2C3D4E5F7\"",
+   "valid": [
+    "04A1B2C3D4E5F0",
+    "04A1B2C3D4E5F1",
+    "04A1B2C3D4E5F2",
+    "04A1B2C3D4E5F3",
+    "04A1B2C3D4E5F4",
+    "04A1B2C3D4E5F5",
+    "04A1B2C3D4E5F6",
+    "04A1B2C3D4E5F7"
+   ],
+   "invalid": []
+  }
+ ],
+ "card_uids_write": [
+  {
+   "name": "acrescenta",
+   "extra": "\"04A1B2C3\"",
+   "add": "53B992B4",
+   "expect": "\"04A1B2C3,53B992B4\""
+  },
+  {
+   "name": "migra-lista",
+   "extra": "[\"04a1b2c3\"]",
+   "add": "53F595B4950001",
+   "expect": "\"04A1B2C3,53F595B4950001\""
+  },
+  {
+   "name": "migra-texto-com-lista",
+   "extra": "\"[\\\"04a1b2c3\\\"]\"",
+   "add": "53B992B4",
+   "expect": "\"04A1B2C3,53B992B4\""
+  },
+  {
+   "name": "ausente",
+   "extra": null,
+   "add": "04a1b2c3",
+   "expect": "\"04A1B2C3\""
+  },
+  {
+   "name": "invalido-no-fim",
+   "extra": "\"ABC,04A1B2C3\"",
+   "add": "53B992B4",
+   "expect": "\"04A1B2C3,53B992B4,ABC\""
+  },
+  {
+   "name": "ja-presente",
+   "extra": "\"04A1B2C3\"",
+   "add": "04:a1:b2:c3",
+   "expect": "\"04A1B2C3\"",
+   "already": true
+  },
+  {
+   "name": "tags-nao-copiadas",
+   "extra": "\"\"",
+   "tags": [
+    "AABBCCDD"
+   ],
+   "add": "04A1B2C3",
+   "expect": "\"04A1B2C3\""
+  },
+  {
+   "name": "limite",
+   "extra": "\"04A1B2C3D4E5F0,04A1B2C3D4E5F1,04A1B2C3D4E5F2,04A1B2C3D4E5F3,04A1B2C3D4E5F4,04A1B2C3D4E5F5,04A1B2C3D4E5F6,04A1B2C3D4E5F7\"",
+   "add": "53B992B4",
+   "error": "uid.too_many"
+  }
+ ],
+ "card_uid": [
+  {
+   "value": [
+    83,
+    245,
+    153,
+    180,
+    149,
+    0,
+    1
+   ],
+   "expect": "53F599B4950001"
+  },
+  {
+   "value": "83 245 153 180 149 0 1",
+   "expect": "53F599B4950001"
+  },
+  {
+   "value": "83,245,153,180,149,0,1",
+   "expect": "53F599B4950001"
+  },
+  {
+   "value": [
+    4,
+    161,
+    178,
+    195
+   ],
+   "expect": "04A1B2C3"
+  },
+  {
+   "value": "4 161 178 195",
+   "expect": "04A1B2C3"
+  },
+  {
+   "value": [
+    0,
+    0,
+    0,
+    0
+   ],
+   "expect": ""
+  },
+  {
+   "value": "0 0 0 0 0 0 0",
+   "expect": ""
+  },
+  {
+   "value": [],
+   "expect": ""
+  },
+  {
+   "value": [
+    1,
+    2,
+    3
+   ],
+   "expect": ""
+  },
+  {
+   "value": [
+    256,
+    1,
+    2,
+    3
+   ],
+   "expect": ""
+  },
+  {
+   "value": "",
+   "expect": ""
+  },
+  {
+   "value": null,
+   "expect": ""
+  },
+  {
+   "value": "04A1B2C3",
+   "expect": ""
+  }
+ ]
+}

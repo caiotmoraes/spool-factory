@@ -16,7 +16,7 @@ final class AssociationLedger {
     }
     void migrate(List<String> history)throws Exception{
         boolean[] seen=new boolean[4];
-        Pattern assigned=Pattern.compile("Associado ao feeder ([1-4]): #(\\d+)"),removed=Pattern.compile("Filamento retirado do feeder ([1-4])");
+        Pattern assigned=Pattern.compile("(?:Associado ao (?:feeder |T)|Assigned to T)([1-4]): #(\\d+)"),removed=Pattern.compile("Filamento retirado do feeder ([1-4])");
         for(String text:history){Matcher m=assigned.matcher(text),r=removed.matcher(text);
             if(r.find()){seen[Integer.parseInt(r.group(1))-1]=true;continue;}
             if(m.find()){int ch=Integer.parseInt(m.group(1))-1;if(!seen[ch]&&!entries.has(""+ch)){record(ch,Integer.parseInt(m.group(2)),"","histórico");verified[ch]=false;}seen[ch]=true;}

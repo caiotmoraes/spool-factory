@@ -1,0 +1,7 @@
+Font Awesome Free 5 — https://fontawesome.com/license/free
+Copyright (c) Fonticons, Inc.
+
+This app bundles a subset (solid style, only the icons it uses) of the Font Awesome Free font.
+- Icons: CC BY 4.0 License (https://creativecommons.org/licenses/by/4.0/)
+- Fonts: SIL OFL 1.1 License (https://scripts.sil.org/OFL); the full OFL text is in Montserrat-OFL.txt
+- Code: MIT License

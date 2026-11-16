@@ -2,6 +2,13 @@
 
 The APK uses Android's standard Java/WebView APIs with no app runtime dependencies. It is built with JDK 17 and Android platform/build-tools 35 using the included PowerShell scripts. No Gradle or Android Studio installation is required.
 
+On Linux (or macOS with build-tools installed), one script downloads the same verified tools and builds:
+
+```bash
+./build.sh          # tools (if missing) + assets + signed APK
+./build.sh --test   # also runs Java, fixture and UI tests
+```
+
 On Windows with PowerShell 7:
 
 ```powershell
@@ -34,19 +41,22 @@ Private keys and passwords must never be uploaded to GitHub. CI compiles with it
 
 Optional read-only checks use `./test.ps1 -Live`, with your own `SPOOL_PRINTER_URL` and `SPOOLMAN_URL` environment variables. These checks require reachability and deployments that permit those read requests without additional keys. Never put private deployment addresses or credentials in the repository.
 
-Visual tests require Node.js and Chrome:
+`node tests/ui-test.cjs` checks the web UI rules against `spec/fixtures/uids.json` and the text catalog (no browser needed).
+
+Visual tests require Node.js and Chrome/Chromium:
 
 ```powershell
 npm install --prefix tools/ui-test playwright-core --no-audit --no-fund
-node tests/ui-test.cjs
+node tests/ui-browser-test.cjs
 ```
 
-The test uses the standard Windows Chrome path; adjust it locally for another browser installation. Screenshots are saved to ignored `build/ui/` with synthetic sample data. They test the bundled interface in a desktop browser; they are not a substitute for Android and hardware validation.
+Set `CHROME` to the browser executable if Playwright cannot find it. Screenshots are saved to ignored `build/ui/` with synthetic sample data. They test the bundled interface in a desktop browser; they are not a substitute for Android and hardware validation.
 
 ## Layout
 
 - `src/`: native NFC, foreground monitor, HTTP integration, settings and native confirmations.
-- `assets/`: offline pixel-art interface, animation, font/license and illustration.
+- `spec/`: U1 Spool Spec v1, shared with the U1 Factory Display firmware: `tokens.json` (colors, fonts, icons, rules), `strings.json` (pt/en text catalog), `fixtures/uids.json` (card_uids/CARD_UID cases). `build.ps1`/`build.sh` copy `strings.json` into `assets/` and generate `assets/i18n-data.js`.
+- `assets/`: offline web interface (light theme), Montserrat and Font Awesome subsets (`assets/fonts/`).
 - `res/`, `AndroidManifest.xml`: icon, permissions and application metadata.
 - `tests/`: Java and browser regression tests and synthetic fixtures.
 - `docs/`: the GitHub Pages landing page and public documentation images.

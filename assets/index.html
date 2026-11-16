@@ -1,57 +1,89 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'"><title>Spool Factory</title><link rel="stylesheet" href="style.css"></head>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'">
+<title>Spool Factory</title>
+<link rel="stylesheet" href="style.css">
+</head>
 <body>
-<div class="shell">
-<header class="frame"><canvas id="brand-spool" width="48" height="52" aria-hidden="true"></canvas><h1>Spool Factory</h1><button class="gear" data-action="settings" aria-label="Configurar conexão">⚙</button></header>
-<div class="connection"><span id="lamp"></span><span id="connection">U1 desconectada</span><button id="connect" data-action="connect">Conectar</button></div>
-<div id="mode-warning" class="mode-warning" hidden>Selecione <strong>Filament Detection → External</strong> no Firmware Config da U1. Leitores internos podem apagar associações do celular. <button data-action="firmware">Abrir Firmware Config</button></div>
+<nav id="nav">
+ <button data-tab="home" class="on"><i class="i">&#xf015;</i><span data-t="nav.home"></span></button>
+ <button data-tab="control"><i class="i">&#xf1de;</i><span data-t="nav.control"></span></button>
+ <button data-tab="stock"><i class="i">&#xf1b2;</i><span data-t="nav.stock"></span></button>
+ <button data-tab="nfc"><i class="i">&#xf519;</i><span data-t="nav.nfc"></span></button>
+ <button data-tab="settings"><i class="i">&#xf013;</i><span data-t="nav.settings"></span></button>
+</nav>
 <main>
-<section id="factory" class="page">
-<div class="scene"><canvas id="factory-scene" width="480" height="360" role="img" aria-label="Fábrica animada com a Snapmaker U1, quatro rolos e trabalhadores"></canvas><div id="scene-status">AGUARDANDO CONEXÃO</div><button id="motion" data-motion aria-label="Pausar animações">Ⅱ</button></div>
-<section class="reader frame"><span class="nfc-mark" aria-hidden="true">◖<span>NFC</span>◗</span><div><h2 id="reader-title">APROXIME O ROLO</h2><p id="reader-hint">Leia a tag e insira no próximo feeder.</p></div><button class="primary" data-action="scan" id="read">LER NFC</button></section>
-<div class="feedback" role="status" aria-live="polite"><span id="message">Conecte a U1 para começar.</span><span id="countdown"></span><button data-action="cancel" id="cancel" hidden>Cancelar</button></div>
-<div id="pending" class="pending" hidden></div><button id="unknown-register" class="outline" hidden>Cadastrar esta tag no Armazém</button>
-<div class="section-title"><span></span><h2>ROLOS INSTALADOS</h2><span></span></div>
-<div id="feeders" class="grid"></div>
-<button id="manual-open" class="outline">Trocar filamento manualmente</button>
-<p class="helper">Leia com o app aberto. Após identificar, o monitor acompanha a inserção pela notificação.</p>
-</section>
-<section id="stock" class="page" hidden>
-<div class="room frame"><canvas id="warehouse-scene" width="480" height="220" role="img" aria-label="Armazém em pixel art com estantes e rolos do estoque"></canvas><button class="room-motion" data-motion aria-label="Pausar animações">Ⅱ</button><div class="room-caption"><h2>ARMAZÉM DE ROLOS</h2><p>Seu estoque, uma prateleira de cada vez.</p></div></div>
-<div class="inventory-toolbar"><button id="new-spool" class="primary">+ NOVO ROLO / NFC</button><button data-action="inventoryRefresh">Atualizar estoque</button></div><p id="inventory-message" class="helper" role="status"></p><div id="stock-summary" class="summary" aria-live="polite"></div>
-<p id="stock-note" class="helper"></p><label class="search-label" for="search">Buscar rolo, material, marca, cor ou local</label><input id="search" type="search" placeholder="Ex.: PETG branco" autocomplete="off">
-<div class="warehouse-filters"><label>Material<select id="filter-material"><option value="">Todos</option></select></label><label>Marca<select id="filter-brand"><option value="">Todas</option></select></label><label>Local<select id="filter-location"><option value="">Todos</option></select></label><label>Ordenar<select id="stock-sort"><option value="id">Número do rolo</option><option value="weight">Menor peso restante</option><option value="material">Material</option><option value="brand">Marca</option></select></label></div>
-<div class="filters"><button id="archived" aria-pressed="false">Mostrar arquivados</button><button id="low-stock" aria-pressed="false">Até 200 g</button><button id="stock-view" aria-pressed="false">Lista compacta</button></div><div class="results-line"><span id="stock-count" role="status"></span><button id="reset-filters">Limpar filtros</button></div>
-<div id="stock-list" class="stock-list"></div></section>
-<section id="history" class="page" hidden>
-<div class="room frame"><canvas id="office-scene" width="480" height="180" role="img" aria-label="Escritório da fábrica em pixel art, com arquivos e mesa de registros"></canvas><button class="room-motion" data-motion aria-label="Pausar animações">Ⅱ</button><div class="room-caption"><h2>ESCRITÓRIO DA FÁBRICA</h2><p>O diário das suas trocas de filamento.</p></div></div>
-<div id="history-summary" class="summary"></div><p class="helper">Registros locais deste celular. Não representam todo o histórico da impressora nem o consumo de cada impressão.</p>
-<label class="search-label" for="history-search">Buscar nos registros</label><input id="history-search" type="search" placeholder="Rolo, feeder ou mensagem"><label class="search-label" for="history-filter">Tipo de registro</label><select id="history-filter"><option value="">Todos</option><option value="association">Associações</option><option value="read">Leituras NFC</option><option value="problem">Alertas e falhas</option></select><button class="outline" data-action="share">Compartilhar diagnóstico</button><ol id="events"></ol></section>
-</main>
-<footer><button data-tab="factory" class="selected"><span aria-hidden="true">▥</span>Fábrica</button><button data-tab="stock"><span aria-hidden="true">▧</span>Armazém</button><button data-tab="history"><span aria-hidden="true">▤</span>Histórico</button></footer>
-<div class="version">SPOOL FACTORY · 1.8.0</div>
-</div>
-<dialog id="manual-dialog"><form method="dialog"><div class="manual-header"><h2>TROCA MANUAL</h2><button aria-label="Fechar troca manual">✕</button></div></form><p class="helper">Escolha o feeder e o rolo conectado a ele. Para trocar fisicamente: retire o antigo, insira o novo, associe o rolo e carregue.</p><label for="manual-channel">Feeder</label><select id="manual-channel"><option value="0">Feeder 1</option><option value="1">Feeder 2</option><option value="2">Feeder 3</option><option value="3">Feeder 4</option></select><label for="manual-search">Buscar no estoque</label><input id="manual-search" type="search" placeholder="Marca, material, cor ou número"><label for="manual-spool">Rolo do Spoolman</label><select id="manual-spool"></select><p id="manual-note" class="helper" role="status"></p><button id="manual-assign" class="outline">Associar rolo ao feeder</button><div class="manual-motors"><button id="manual-load">Carregar filamento</button><button id="manual-unload">Retirar filamento</button></div><p class="helper">Carregar e retirar usam os comandos nativos da U1 e podem aquecer e movimentar a impressora.</p></dialog>
-<dialog id="spool-dialog"><form method="dialog"><div class="manual-header"><h2>FICHA DO ROLO</h2><button aria-label="Fechar ficha do rolo">✕</button></div></form><div id="spool-detail"></div><button id="detail-edit" class="outline">Editar peso e local</button><button id="detail-bind" class="outline">Vincular outra tag NFC</button><button id="detail-assign" class="primary">ESCOLHER FEEDER</button><p id="detail-message" class="helper" role="status"></p><button id="detail-delete" class="danger outline">Excluir rolo do Spoolman</button><p class="helper">A seleção abre a troca manual. A associação e os movimentos exigem sua confirmação.</p></dialog>
-<dialog id="register-dialog"><form method="dialog"><div class="manual-header"><h2 id="register-title">RECEPÇÃO DE ROLOS</h2><button aria-label="Fechar cadastro">✕</button></div></form>
-<p class="helper">Cadastre ou encontre um rolo no Spoolman, sem precisar conectar a impressora. A tag fornece sua identificação; confira os dados do filamento no rótulo.</p>
-<form id="register-form">
-<div id="register-tag-section"><button type="button" id="register-read" class="outline">Ler / conferir tag NFC</button><label for="register-uid">UID da tag lida</label><input id="register-uid" readonly placeholder="Aproxime a tag do celular"><div id="tag-check" class="notice" role="status">Leia a tag para conferir se já há um rolo cadastrado.</div><button type="button" id="tag-open" class="outline" hidden>Abrir rolo cadastrado</button></div>
-<div id="register-catalog-section"><label for="register-filament">Filamento do catálogo</label><select id="register-filament"><option value="">Carregando catálogo…</option></select><div id="new-filament-fields" hidden>
-<label for="register-vendor">Fabricante</label><input id="register-vendor" maxlength="64" list="vendor-names" placeholder="Ex.: Masterprint"><datalist id="vendor-names"></datalist>
-<label for="register-name">Nome / acabamento</label><input id="register-name" maxlength="64" placeholder="Ex.: PETG branco ou PLA Silk tricolor">
-<label for="register-material">Material</label><input id="register-material" maxlength="64" list="material-names" placeholder="PLA, PETG, ABS…"><datalist id="material-names"><option value="PLA"><option value="PETG"><option value="ABS"><option value="ASA"><option value="TPU"></datalist>
-<label for="register-colors">Cores HEX, separadas por vírgula</label><input id="register-colors" maxlength="80" placeholder="FFFFFF ou DFA62A,F1681E,DB39AF"><div id="register-color-preview"></div>
-<label for="register-direction">Distribuição das cores</label><select id="register-direction"><option value="coaxial">Lado a lado (silk multicolor)</option><option value="longitudinal">Ao longo do filamento (degradê)</option></select>
-<div class="warehouse-filters"><label>Densidade (g/cm³)<input id="register-density" type="number" min="0.01" step="0.01" placeholder="Conforme fabricante"></label><label>Diâmetro (mm)<input id="register-diameter" type="number" min="0.01" step="0.01" value="1.75"></label></div><p class="helper">Informe a densidade do material para o Spoolman calcular o consumo corretamente.</p>
-</div></div>
-<div id="register-weight-fields"><div id="register-initial-section"><label for="register-initial">Peso inicial de filamento (g, sem o carretel)</label><input id="register-initial" type="number" min="0.01" step="0.01" value="1000"></div><label for="register-remaining">Peso restante de filamento (g, sem o carretel)</label><input id="register-remaining" type="number" min="0" step="0.01" value="1000"><p id="weight-edit-note" class="helper" hidden>Deixe em branco para preservar o peso atual. Altere apenas se você mediu uma correção.</p><label for="register-location">Local</label><input id="register-location" maxlength="64" placeholder="Drybox, prateleira…"><label for="register-comment">Observações</label><textarea id="register-comment" maxlength="1024" rows="3"></textarea></div>
-<p id="register-message" class="helper" role="status" aria-live="polite"></p><button id="register-save" type="submit" class="primary">SALVAR NO SPOOLMAN</button></form></dialog>
-<dialog id="settings-dialog" class="control-room"><form method="dialog"><div class="manual-header"><div><span class="eyebrow">SPOOL FACTORY / SISTEMAS</span><h2>SALA DE CONTROLE</h2></div><button aria-label="Fechar configurações">✕</button></div></form><div class="control-console" aria-hidden="true"><span class="console-screen"><span>▥</span><i></i><span>◈</span><i></i><span>▧</span></span><span class="console-lights">■ ■ ■</span></div><p class="helper">Conecte sua fábrica e seu armazém. Os serviços podem estar em computadores diferentes.</p>
-<form id="settings-form"><section class="settings-card"><label for="settings-language">Idioma</label><select id="settings-language"><option value="auto">Automático (idioma do celular)</option><option value="pt">Português (Brasil)</option><option value="en">English</option></select></section><section class="settings-card"><div class="settings-heading"><span>01</span><h3>IMPRESSORA U1</h3><small>Opcional para usar só o Armazém</small></div><label for="settings-printer">Endereço da impressora</label><input id="settings-printer" type="text" inputmode="url" autocomplete="off" spellcheck="false" placeholder="http://192.168.1.50"><p class="field-hint">IP local ou endereço Tailscale da U1.</p><p id="settings-printer-result" class="connection-result" role="status">Ainda não testada</p></section>
-<section class="settings-card"><div class="settings-heading"><span>02</span><h3>ARMAZÉM / SPOOLMAN</h3></div><label for="settings-spoolman">Endereço do Spoolman</label><input id="settings-spoolman" type="text" inputmode="url" autocomplete="off" spellcheck="false" placeholder="http://spoolman.local:7912" required><p class="field-hint">Informe o endereço do servidor do estoque e a porta. A porta padrão é 7912.</p><p id="settings-address-hint" class="field-hint"></p><p id="settings-spoolman-result" class="connection-result" role="status">Ainda não testado</p></section>
-<details id="settings-advanced"><summary>CHAVES E LEITURA</summary><p class="helper">Deixe as chaves vazias se seus serviços não exigirem autenticação.</p><label for="settings-printer-key">Chave API da U1 · opcional</label><input id="settings-printer-key" type="password" autocomplete="off"><label for="settings-spool-key">Chave API do Spoolman · opcional</label><input id="settings-spool-key" type="password" autocomplete="off"><label class="check-label"><input id="settings-show-keys" type="checkbox"> Mostrar chaves</label><label for="settings-timeout">Prazo para inserir o filamento após ler NFC</label><select id="settings-timeout"><option value="60">1 minuto</option><option value="120">2 minutos</option><option value="180">3 minutos</option><option value="300">5 minutos</option><option value="600">10 minutos</option></select></details>
-<p class="helper">Com endereços Tailscale, mantenha o Tailscale conectado no celular. Testar apenas consulta os serviços.</p><p id="settings-message" class="helper" role="status" aria-live="polite"></p><div class="settings-actions"><button id="settings-test" type="button" class="outline">TESTAR CONEXÕES</button><button id="settings-save" type="submit" class="primary">SALVAR</button></div></form></dialog>
-<dialog id="delete-dialog"><form method="dialog"><div class="manual-header"><h2>EXCLUIR ROLO</h2><button aria-label="Cancelar exclusão">✕</button></div></form><div id="delete-summary"></div><p class="helper">O cadastro deste rolo e seus vínculos NFC serão removidos do Spoolman. O fabricante e o tipo de filamento permanecem no catálogo. Esta ação não pode ser desfeita pelo app.</p><label for="delete-confirm">Digite o número do rolo para confirmar</label><input id="delete-confirm" type="text" inputmode="numeric" autocomplete="off"><p id="delete-message" class="helper" role="status"></p><button id="delete-submit" class="danger" disabled>EXCLUIR DEFINITIVAMENTE</button></dialog>
-<script src="i18n-data.js"></script><script src="i18n.js"></script><script src="app.js"></script></body></html>
+ <div id="banner"></div>
 
+ <section id="tab-home">
+  <div class="grid home-grid">
+   <div class="card" id="print-card"></div>
+   <div class="card"><h3 data-t="home.filaments"></h3><div class="feeders" id="home-feeders"></div></div>
+   <div class="card"><div class="temps" id="home-temps"></div></div>
+  </div>
+ </section>
+
+ <section id="tab-control" hidden>
+  <div class="head"><h1 data-t="ctl.title"></h1><button class="danger" id="estop"><i class="i">&#xf011;</i> <span data-t="ctl.estop"></span></button></div>
+  <div class="card" id="ctl-print"></div>
+  <div class="card"><h3 data-t="ctl.temps"></h3><div class="ctl-grid" id="ctl-temps"></div><p class="small muted" id="ctl-temps-note"></p></div>
+  <div class="card"><h3 data-t="ctl.fans"></h3><div class="ctl-grid" id="ctl-fans"></div></div>
+  <div class="card"><h3 data-t="ctl.feeders"></h3><div class="ctl-grid" id="ctl-feeders"></div><p class="small muted" data-t="feed.warning"></p></div>
+ </section>
+
+ <section id="tab-stock" hidden>
+  <div class="head"><h1 data-t="stock.title"></h1><span class="small muted" id="stock-updated"></span>
+   <button id="stock-refresh"><i class="i">&#xf021;</i> <span data-t="common.refresh"></span></button>
+   <button class="primary" id="stock-new"><i class="i">&#xf067;</i> <span data-t="stock.new"></span></button></div>
+  <input id="search" type="search" data-tp="stock.search" autocomplete="off">
+  <div class="filters">
+   <select id="f-material"></select><select id="f-vendor"></select><select id="f-location"></select>
+   <select id="f-sort"><option value="id" data-t="sort.id"></option><option value="weight" data-t="sort.weight"></option><option value="material" data-t="sort.material"></option><option value="brand" data-t="sort.brand"></option></select>
+  </div>
+  <div class="row">
+   <button class="chip" id="c-archived" data-t="stock.archived"></button>
+   <button class="chip" id="c-low" data-t="stock.low"></button>
+   <button class="chip" id="c-compact" data-t="stock.compact"></button>
+   <button class="chip" id="c-clear" data-t="stock.clear"></button>
+   <span class="small muted" id="stock-summary"></span>
+  </div>
+  <p></p>
+  <div class="list" id="stock-list"></div>
+ </section>
+
+ <section id="tab-nfc" hidden>
+  <div class="head"><h1 data-t="nfc.title"></h1></div>
+  <div class="card reader"><i class="i big">&#xf519;</i><div><h2 data-t="nfc.tap"></h2><p class="t2" id="nfc-status"></p><button id="nfc-onoff" hidden data-t="nfc.off"></button></div></div>
+  <div id="nfc-result"></div>
+  <div class="card"><h3 data-t="nfc.deadline"></h3><div class="row" id="nfc-deadline"></div></div>
+ </section>
+
+ <section id="tab-settings" hidden>
+  <div class="head"><h1 data-t="set.title"></h1></div>
+  <div class="card">
+   <h2 data-t="set.printer"></h2>
+   <p class="small t2" id="set-conn"></p>
+   <label for="s-printer" data-t="set.ip"></label><input id="s-printer" inputmode="url" autocomplete="off">
+   <label for="s-spoolman" data-t="set.spoolman"></label><input id="s-spoolman" inputmode="url" autocomplete="off">
+   <p class="small muted" data-t="set.spoolman_hint"></p>
+   <details><summary class="small t2" data-t="set.keys"></summary>
+    <label for="s-printerKey">Moonraker</label><input id="s-printerKey" autocomplete="off">
+    <label for="s-spoolKey">Spoolman</label><input id="s-spoolKey" autocomplete="off"></details>
+   <label for="s-language" data-t="set.language"></label>
+   <select id="s-language"><option value="auto" data-t="set.lang_auto"></option><option value="pt">Português (Brasil)</option><option value="en">English</option></select>
+   <div class="row" style="margin-top:14px"><button class="primary" id="s-save" data-t="common.save"></button><button id="s-test" data-t="conn.test"></button><button id="s-rescan" data-t="conn.rescan"></button></div>
+   <p class="small" id="s-result"></p>
+  </div>
+  <div class="card"><div class="row"><h2 class="spacer" data-t="log.title"></h2><button id="s-share" data-t="set.share"></button></div><ul class="log" id="log"></ul></div>
+  <div class="card"><h2 data-t="set.about"></h2><p class="t2" id="about"></p><button id="s-firmware" data-t="set.firmware"></button></div>
+ </section>
+</main>
+<div id="modal" hidden><div class="sheet" id="sheet"></div></div>
+<div id="toast"></div>
+<script src="i18n-data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

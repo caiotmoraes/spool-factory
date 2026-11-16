@@ -1,3 +1,14 @@
+## 2.0.0 — unificação com o U1 Factory Display (U1 Spool Spec v1)
+
+- **Visual igual ao display**: tema claro (spec/tokens.json), Montserrat + ícones Font Awesome, 5 abas — Início, Controle, Armazém, NFC, Ajustes. Removida a fábrica em pixel art.
+- **Nova aba Controle**: pausar/retomar/cancelar, temperaturas dos bicos T1–T4 e da mesa (só com a U1 ociosa), ventiladores (peça, exaustão, circulação, câmara via `M106`/`SET_FAN_SPEED`), parada de emergência, carregar/retirar e "Ativar no alimentador".
+- **Conexão automática**: descobre a U1 na rede (/24, `:7125/printer/info`), lembra o IP e procura de novo se o DHCP mudar. Spoolman pelo proxy da U1 (`/server/spoolman/proxy`, `use_v2_response`); Spoolman direto vira opcional.
+- **card_uids canônico**: grava sempre o texto JSON `"A,B"` em maiúsculas; lê os formatos antigos (lista, espaços, minúsculas, texto com lista) e migra ao gravar; comparação exata; tags inválidas aparecem na ficha; até 8 tags por rolo. `CARD_UID` aceito como lista ou texto decimal.
+- **Mesmos fluxos e textos do display** (spec/strings.json, pt+en): exclusão com uma confirmação (digitar o número), associar/ativar permitido durante a impressão, NFC→inserir e carregar/retirar bloqueados durante a impressão, confirmação com 4 leituras em 20 s, prazo de inserção 1–10 min, janela de 240 s para carregar/retirar.
+- Carregar/retirar não exige mais o modo External (igual ao display); gravar tag (`filament_detect/set`) e `spoollink/set` continuam exigindo.
+- Tag desconhecida: "Cadastrar rolo" ou "Associar esta tag" direto da leitura. Cadastro de rolo com tag opcional.
+- `build.sh` para Linux/macOS (equivalente a setup.ps1 + build.ps1); testes com os fixtures da Spec v1 e teste de UI no Chromium.
+
 ## 1.8.0 — public beta
 
 - Added English and Brazilian Portuguese, automatic phone-language selection and a saved Control Room language selector.
