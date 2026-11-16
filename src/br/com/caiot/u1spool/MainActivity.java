@@ -62,14 +62,14 @@ public class MainActivity extends Activity implements NfcAdapter.ReaderCallback 
         }
         FrameLayout root=new FrameLayout(this);root.setBackgroundColor(BG);
         root.setOnApplyWindowInsetsListener((v,insets)->{
-            int l,t,r,b;
+            int left,top,right,bottom;
             if(Build.VERSION.SDK_INT>=30){
                 android.graphics.Insets sys=insets.getInsets(WindowInsets.Type.systemBars()|WindowInsets.Type.displayCutout()|WindowInsets.Type.ime());
-                l=sys.left;t=sys.top;r=sys.right;b=sys.bottom;
+                left=sys.left;top=sys.top;right=sys.right;bottom=sys.bottom;
             }else{
-                l=insets.getSystemWindowInsetLeft();t=insets.getSystemWindowInsetTop();r=insets.getSystemWindowInsetRight();b=insets.getSystemWindowInsetBottom();
+                left=insets.getSystemWindowInsetLeft();top=insets.getSystemWindowInsetTop();right=insets.getSystemWindowInsetRight();bottom=insets.getSystemWindowInsetBottom();
             }
-            v.setPadding(l,t,r,b);
+            v.setPadding(left,top,right,bottom);
             return Build.VERSION.SDK_INT>=30?WindowInsets.CONSUMED:insets.consumeSystemWindowInsets();
         });
         web=new WebView(this);web.setBackgroundColor(BG);
