@@ -42,11 +42,39 @@ public class MainActivity extends Activity implements NfcAdapter.ReaderCallback 
     private String versionName(){try{return getPackageManager().getPackageInfo(getPackageName(),0).versionName;}catch(Exception e){return "?";}}
     @Override public void onCreate(Bundle b){
         super.onCreate(b);try{L10n.load(getAssets().open("strings.json"));}catch(Exception e){android.util.Log.e("SpoolFactory","Localization unavailable",e);}applyLanguage();nfc=NfcAdapter.getDefaultAdapter(this);
-        getWindow().setStatusBarColor(BG);getWindow().setNavigationBarColor(BG);
-        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR|(Build.VERSION.SDK_INT>=26?View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR:0));
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        web=new WebView(this);web.setBackgroundColor(BG);setContentView(web);
-        web.setOnApplyWindowInsetsListener((v,insets)->{if(Build.VERSION.SDK_INT>=30){android.graphics.Insets sys=insets.getInsets(WindowInsets.Type.systemBars());v.setPadding(sys.left,sys.top,sys.right,sys.bottom);}else v.setPadding(insets.getSystemWindowInsetLeft(),insets.getSystemWindowInsetTop(),insets.getSystemWindowInsetRight(),insets.getSystemWindowInsetBottom());return insets;});
+        getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(BG));
+        /* Android 15 (target 35) desenha atrás das barras. Padding no WebView não move
+         * position:fixed; o recuo vai no FrameLayout pra o viewport já nascer insetado. */
+        if(Build.VERSION.SDK_INT>=30){
+            getWindow().setDecorFitsSystemWindows(false);
+            WindowInsetsController bars=getWindow().getInsetsController();
+            if(bars!=null)bars.setSystemBarsAppearance(WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS|WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS,WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS|WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS);
+        }else{
+            getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR|(Build.VERSION.SDK_INT>=26?View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR:0));
+        }
+        if(Build.VERSION.SDK_INT>=29){
+            getWindow().setStatusBarColor(android.graphics.Color.TRANSPARENT);
+            getWindow().setNavigationBarColor(android.graphics.Color.TRANSPARENT);
+            getWindow().setNavigationBarContrastEnforced(false);
+        }else{
+            getWindow().setStatusBarColor(BG);getWindow().setNavigationBarColor(BG);
+        }
+        FrameLayout root=new FrameLayout(this);root.setBackgroundColor(BG);
+        root.setOnApplyWindowInsetsListener((v,insets)->{
+            int l,t,r,b;
+            if(Build.VERSION.SDK_INT>=30){
+                android.graphics.Insets sys=insets.getInsets(WindowInsets.Type.systemBars()|WindowInsets.Type.displayCutout()|WindowInsets.Type.ime());
+                l=sys.left;t=sys.top;r=sys.right;b=sys.bottom;
+            }else{
+                l=insets.getSystemWindowInsetLeft();t=insets.getSystemWindowInsetTop();r=insets.getSystemWindowInsetRight();b=insets.getSystemWindowInsetBottom();
+            }
+            v.setPadding(l,t,r,b);
+            return Build.VERSION.SDK_INT>=30?WindowInsets.CONSUMED:insets.consumeSystemWindowInsets();
+        });
+        web=new WebView(this);web.setBackgroundColor(BG);
+        root.addView(web,new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,FrameLayout.LayoutParams.MATCH_PARENT));
+        setContentView(root);root.requestApplyInsets();
         WebSettings ws=web.getSettings();ws.setJavaScriptEnabled(true);ws.setAllowFileAccess(false);ws.setAllowContentAccess(false);ws.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);ws.setJavaScriptCanOpenWindowsAutomatically(false);ws.setSupportMultipleWindows(false);
         web.addJavascriptInterface(new Bridge(),"Native");
         web.setWebViewClient(new WebViewClient(){

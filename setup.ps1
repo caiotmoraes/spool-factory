@@ -1,8 +1,16 @@
 $ErrorActionPreference='Stop'
 Set-Location -LiteralPath $PSScriptRoot
 New-Item -ItemType Directory -Force tools | Out-Null
+# PowerShell 5 não tem -MaximumRetryCount no Invoke-WebRequest.
+function Get-WebFile($url,$file,[int]$retries=3,[int]$delaySec=2){
+ $last=$null
+ for($i=1;$i -le $retries;$i++){
+  try{Invoke-WebRequest $url -OutFile $file;return}catch{$last=$_;if($i -lt $retries){Start-Sleep -Seconds $delaySec}}
+ }
+ throw $last
+}
 function FetchZip($url,$file,$destination,$algorithm,$hash){
- Invoke-WebRequest $url -OutFile $file
+ Get-WebFile $url $file
  if((Get-FileHash $file -Algorithm $algorithm).Hash.ToLower() -ne $hash.ToLower()){throw "Checksum inválido: $file"}
  Expand-Archive -LiteralPath $file -DestinationPath $destination -Force
 }
@@ -21,7 +29,7 @@ if(!(Test-Path tools/json.jar)){
  $downloaded=$false
  foreach($mirror in @('https://repo.maven.apache.org/maven2/','https://repo1.maven.org/maven2/')){
   try{
-   Invoke-WebRequest ($mirror+$jsonPath) -OutFile tools/json.jar -MaximumRetryCount 3 -RetryIntervalSec 2
+   Get-WebFile ($mirror+$jsonPath) tools/json.jar
    if((Get-FileHash tools/json.jar -Algorithm SHA256).Hash.ToLower() -ne '3cf6cd6892e32e2b4c1c39e0f52f5248a2f5b37646fdfbb79a66b46b618414ed'){throw 'JSON test dependency checksum mismatch'}
    $downloaded=$true;break
   }catch{Write-Warning "Test dependency download failed from ${mirror}: $($_.Exception.Message)"}

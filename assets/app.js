@@ -139,10 +139,10 @@ function renderControl(){
  put('ctl-temps-note',idle||!online()?'':esc(t('ctl.blocked_print')));
  const fans=[['fan','fan.part'],['fan_generic exhaust_fan','fan.exhaust'],['fan_generic circulation_fan','fan.circulation'],['fan_generic cavity_fan','fan.cavity']];
  put('ctl-fans',fans.map(([obj,key],i)=>{const o=s?.[obj];const pct=o?Math.round((o.speed||0)*100):null;
-  return `<div class="tile"><div class="name"><i class="i">&#xf72e;</i> ${esc(t(key))}</div><div class="val">${pct==null?'—':pct+'%'}</div><div class="row">${[0,25,50,75,100].map(v=>`<button class="chip${pct===v?' on':''}" data-fan="${i}" data-v="${v}" ${online()&&o?'':'disabled'}>${v}%</button>`).join('')}</div></div>`;}).join(''));
+  return `<div class="tile"><div class="name"><i class="i">&#xf72e;</i> ${esc(t(key))}</div><div class="val">${pct==null?'—':pct+'%'}</div><div class="row chips">${[0,25,50,75,100].map(v=>`<button class="chip${pct===v?' on':''}" data-fan="${i}" data-v="${v}" ${online()&&o?'':'disabled'}>${v}%</button>`).join('')}</div></div>`;}).join(''));
  put('ctl-feeders',[0,1,2,3].map(i=>{const f=feeder(i);const blocked=!online()||printing()||state.manualOperation||state.armed;
   return `<div class="tile"><div class="name">T${i+1} · ${esc(f.present?(f.mat||t('feeder.unidentified')):t('feeder.empty'))}${f.id&&f.present?' · #'+f.id:''}</div>
-  <div class="small muted">${esc(f.state||'')}</div><div class="row">
+  <div class="small muted">${esc(f.state||'')}</div><div class="row actions">
   <button class="chip" data-feed="LOAD" data-ch="${i}" ${blocked||!f.present?'disabled':''}>${esc(t('feed.load'))}</button>
   <button class="chip" data-feed="UNLOAD" data-ch="${i}" ${blocked||!f.present?'disabled':''}>${esc(t('feed.unload'))}</button>
   <button class="chip" data-assign-ch="${i}" ${!online()||!f.present||state.manualOperation?'disabled':''}>${esc(t('assign.title'))}</button></div></div>`;}).join('')+(printing()?`<p class="small muted">${esc(t('feeder.print_blocked'))}</p>`:''));
@@ -150,7 +150,7 @@ function renderControl(){
 function heaterTile(h,name,o,presets,idle){
  const cur=o?Math.round(o.temperature??0):null,tg=o?Math.round(o.target??0):0;
  return `<div class="tile"><div class="name"><i class="i">&#xf2c9;</i> ${esc(name)}</div><div class="val">${cur==null?'—':cur+' °C'}</div><div class="small muted">${tg?esc(t('home.target',{t:tg})):'&nbsp;'}</div>
-  <div class="row">${presets.map(v=>`<button class="chip${tg===v&&o?' on':''}" data-temp="${h}" data-v="${v}" ${idle&&o?'':'disabled'}>${v?v+'°':esc(t('ctl.off'))}</button>`).join('')}</div></div>`;
+  <div class="row chips">${presets.map(v=>`<button class="chip${tg===v&&o?' on':''}" data-temp="${h}" data-v="${v}" ${idle&&o?'':'disabled'}>${v?v+'°':esc(t('ctl.off'))}</button>`).join('')}</div></div>`;
 }
 
 /* ---------- Armazém ---------- */

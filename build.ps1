@@ -20,6 +20,7 @@ $sources=@(Get-ChildItem -Recurse src,build/generated -Filter '*.java' | ForEach
 Run "$jdk/bin/javac.exe" (@('-encoding','UTF-8','-source','8','-target','8','-classpath',$android,'-d','build/classes')+$sources)
 Run "$jdk/bin/jar.exe" @("-J-Djava.io.tmpdir=$PSScriptRoot/build",'cf','build/classes.jar','-C','build/classes','.')
 Run "$jdk/bin/java.exe" @('-cp',"$bt/lib/d8.jar",'com.android.tools.r8.D8','--lib',$android,'--min-api','26','--output','build/dex','build/classes.jar')
+Add-Type -AssemblyName System.IO.Compression
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $apk=[IO.Compression.ZipFile]::Open((Join-Path $PSScriptRoot 'build/unsigned.apk'),[IO.Compression.ZipArchiveMode]::Update)
 try{$old=$apk.GetEntry('classes.dex');if($old){$old.Delete()};[IO.Compression.ZipFileExtensions]::CreateEntryFromFile($apk,(Join-Path $PSScriptRoot 'build/dex/classes.dex'),'classes.dex') | Out-Null}finally{$apk.Dispose()}

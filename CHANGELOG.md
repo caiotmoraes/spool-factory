@@ -1,3 +1,11 @@
+## 2.0.1 — área segura e chips no celular
+
+- Respeito à status bar e à barra de gestos no Android 15 (edge-to-edge): o conteúdo fica numa área já recuada (system bars + recorte + teclado), e o CSS usa `env(safe-area-inset-*)` com `viewport-fit=cover`.
+- As etiquetas da barra inferior (Início, Controle, …) não ficam atrás da barra de gestos.
+- Chips dos ventiladores (0–100%) e “Ativar no alimentador” quebram linha nos cartões estreitos, sem cortar o texto.
+- `build.ps1` no PowerShell 5: carrega `System.IO.Compression` (além de `System.IO.Compression.FileSystem`) para o `ZipArchiveMode`.
+- `setup.ps1` no PowerShell 5: loop de retry no lugar de `-MaximumRetryCount` (não existe no PS5).
+
 ## 2.0.0 — unificação com o U1 Factory Display (U1 Spool Spec v1)
 
 - **Visual igual ao display**: tema claro (spec/tokens.json), Montserrat + ícones Font Awesome, 5 abas — Início, Controle, Armazém, NFC, Ajustes. Removida a fábrica em pixel art.
