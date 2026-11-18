@@ -48,8 +48,8 @@ cp spec/strings.json assets/strings.json
 
 if [ "${1:-}" = "--test" ]; then
   rm -rf build/tests; mkdir -p build/tests
-  "$JAVAC" -encoding UTF-8 -cp "$TOOLS/json.jar" -d build/tests src/br/com/caiot/u1spool/{EdgeDetector,Api,AssociationLedger,InventoryManager,ConnectionConfig,L10n}.java tests/{EdgeDetectorTest,ApiTest,AssociationLedgerTest,InventoryManagerTest,L10nTest,SpecFixturesTest}.java
-  for t in EdgeDetectorTest ApiTest AssociationLedgerTest InventoryManagerTest L10nTest SpecFixturesTest; do "$JAVA" -cp "build/tests:$TOOLS/json.jar" "br.com.caiot.u1spool.$t"; done
+  "$JAVAC" -encoding UTF-8 -cp "$TOOLS/json.jar" -d build/tests src/br/com/caiot/u1spool/{EdgeDetector,Api,AssociationLedger,InventoryManager,ConnectionConfig,L10n}.java tests/{EdgeDetectorTest,ApiTest,AssociationLedgerTest,InventoryManagerTest,L10nTest,SpecFixturesTest,LinkTest}.java
+  for t in EdgeDetectorTest ApiTest AssociationLedgerTest InventoryManagerTest L10nTest SpecFixturesTest LinkTest; do "$JAVA" -cp "build/tests:$TOOLS/json.jar" "br.com.caiot.u1spool.$t"; done
   node tests/ui-test.cjs
   if [ -d "$TOOLS/ui-test/node_modules/playwright-core" ]; then SPOOL_TOOLS_DIR="$TOOLS" node tests/ui-browser-test.cjs; else echo "(UI no navegador: npm install --prefix \"$TOOLS/ui-test\" playwright-core)"; fi
 fi

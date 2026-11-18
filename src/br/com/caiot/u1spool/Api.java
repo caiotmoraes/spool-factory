@@ -54,6 +54,7 @@ class Api {
         try {
             c.setRequestMethod(method);
             if(body!=null){c.setDoOutput(true);c.setRequestProperty("Content-Type","application/json; charset=utf-8");try(OutputStream o=c.getOutputStream()){o.write(body.toString().getBytes(StandardCharsets.UTF_8));}}
+            else if("POST".equals(method)){c.setDoOutput(true);c.setFixedLengthStreamingMode(0);try(OutputStream o=c.getOutputStream()){o.flush();}}
             int code=c.getResponseCode();
             if(code<200||code>=300){String detail="";try(InputStream e=c.getErrorStream()){if(e!=null){String t=readAll(e);JSONObject j=new JSONObject(t);JSONObject err=j.optJSONObject("error");detail=err!=null?err.optString("message"):j.optString("message",j.optString("detail"));}}catch(Exception ignored){}
                 throw new IOException("HTTP "+code+" em "+path.split("\\?")[0]+(detail.isEmpty()?"":": "+detail));}
@@ -241,6 +242,42 @@ class Api {
         for(int i=0;i<4;i++)if(i!=ch&&sensors(fresh)[i]&&spoolId(fresh,i)==selected.getInt("id"))throw new IOException(L10n.t("assign.in_other","ch",i+1));
         request(printer,"/printer/spoollink/set",new JSONObject().put("channel",ch).put("info",spoolInfo(selected)).put("message","Spool Factory: associação manual"),printerKey);
     }
+    // ---------- Vínculo extrusor → rolo (SpoolLink, fix 2026-11-18) ----------
+    /** Local gravado no rolo que sai de um extrusor (U1 Spool Spec v1). */
+    static final String STORED_LOCATION="Armazém";
+    static String u1Location(int ch)throws IOException{if(ch<0||ch>3)throw new IOException(L10n.t("feeder.invalid"));return "Snapmaker U1 - Extrusor "+(ch+1);}
+    /** Percent-encoding RFC 3986 (igual ao display: só A-Z a-z 0-9 - _ . ~ passam; espaço = %20). */
+    static String urlEncode(String v){StringBuilder b=new StringBuilder();for(byte x:v.getBytes(StandardCharsets.UTF_8)){int c=x&0xff;if(c>='A'&&c<='Z'||c>='a'&&c<='z'||c>='0'&&c<='9'||c=='-'||c=='_'||c=='.'||c=='~')b.append((char)c);else b.append('%').append(String.format(Locale.ROOT,"%02X",c));}return b.toString();}
+    static String setSpoolScript(int ch,int id)throws IOException{if(ch<0||ch>3||id<=0)throw new IOException(L10n.t("feeder.invalid"));return "SET_SPOOL_ID CHANNEL="+ch+" SPOOL_ID="+id;}
+    /** Script na query string e corpo vazio (o JSON no corpo falhou calado na U1 real). */
+    static String setSpoolPath(int ch,int id)throws IOException{return "/printer/gcode/script?script="+urlEncode(setSpoolScript(ch,id));}
+    static String locationQuery(int ch)throws IOException{return "/v1/spool?location="+urlEncode(u1Location(ch));}
+    /** Rolo anterior: local exatamente o do extrusor e não é o novo (o filtro do Spoolman é parcial). */
+    static boolean shouldRelease(JSONObject s,int ch,int newId)throws IOException{int id=s.optInt("id");return id>0&&id!=newId&&u1Location(ch).equals(s.optString("location",""));}
+    /** SET_SPOOL_ID. true = aceito; false = resposta perdida (timeout): pode ter rodado, quem chama confere sem repetir.
+     *  Recusa (HTTP/erro do Moonraker) vira exceção. */
+    boolean setSpoolId(int ch,int id)throws Exception{
+        String path=setSpoolPath(ch,id);
+        try{requestMethod(printer,path,null,printerKey,10000,"POST");return true;}
+        catch(SocketTimeoutException lost){return false;}
+    }
+    /** PATCH location e confere o valor salvo. */
+    JSONObject setLocation(int id,String location)throws Exception{
+        Object r=spoolman("PATCH","/v1/spool/"+id,new JSONObject().put("location",location),8000);
+        JSONObject saved=r instanceof JSONObject?(JSONObject)r:new JSONObject();
+        if(!location.equals(saved.optString("location",null)))throw new IOException("local ficou \""+saved.optString("location","")+"\"");
+        return saved;
+    }
+    JSONObject locateInU1(int id,int ch)throws Exception{return setLocation(id,u1Location(ch));}
+    /** Rolos que ainda marcam o local deste extrusor vão para o Armazém. Devolve os ids movidos. */
+    List<Integer> releasePrevious(int ch,int newId)throws Exception{
+        Object r=spoolmanGet(locationQuery(ch));List<Integer> moved=new ArrayList<>();
+        if(!(r instanceof JSONArray))throw new IOException("Falha ao consultar os locais no Spoolman.");
+        JSONArray a=(JSONArray)r;
+        for(int i=0;i<a.length()&&moved.size()<8;i++){JSONObject s=a.optJSONObject(i);if(s!=null&&shouldRelease(s,ch,newId)){setLocation(s.getInt("id"),STORED_LOCATION);moved.add(s.getInt("id"));}}
+        return moved;
+    }
+
     static String feederScript(JSONObject fresh,int ch,boolean load)throws Exception{
         if(ch<0||ch>3)throw new IOException(L10n.t("feeder.invalid"));feedersIdle(fresh,false);
         if(!sensors(fresh)[ch])throw new IOException(L10n.t("feed.insert_first","ch",ch+1));

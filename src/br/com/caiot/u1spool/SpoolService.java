@@ -140,10 +140,28 @@ public class SpoolService extends Service {
             if(ch<0||ch>3||id<=0)throw new Exception(L10n.t("feeder.invalid"));
             Api c=requireApi();JSONObject selected=c.spool(id);
             if(!current())return;
-            c.assign(ch,selected);spool=selected;JSONObject fresh=c.status();uid=Api.tagUid(fresh,ch);manualVerify=true;
+            c.assign(ch,selected);spool=selected;log(L10n.t("assign.done","id",id,"ch",ch+1));
+            // spoollink/set só grava tipo/cor no canal; quem vincula (e desconta no Spoolman) é o SET_SPOOL_ID.
+            linkSpool(c,ch,id);
+            JSONObject fresh=c.status();uid=Api.tagUid(fresh,ch);manualVerify=true;
             verifyChannel=ch;verifyCount=0;verifyDeadline=now()+CONFIRM_WINDOW_MS;expires=verifyDeadline;phase="confirming";
             message=L10n.t("nfc.confirming");kind="info";publish();
         }catch(Exception e){if(current())cancel(e.getMessage(),"err");}
+    }
+    /** SET_SPOOL_ID (igual ao display). Resposta perdida não repete: a confirmação confere filament_spool_id. */
+    private void linkSpool(Api c,int ch,int id)throws Exception{
+        message=L10n.t("nfc.linking","id",id,"ch",ch+1);kind="info";publish();
+        try{if(!c.setSpoolId(ch,id))log("SET_SPOOL_ID T"+(ch+1)+" sem resposta; conferindo");}
+        catch(Exception e){throw new Exception(L10n.t("nfc.link_failed","ch",ch+1,"msg",e.getMessage()));}
+    }
+    /** Depois de confirmado: local do novo rolo e o anterior deste extrusor vai para o Armazém. */
+    private void finishLink(Api c,int ch,int id){
+        message=L10n.t("nfc.location_saving");kind="info";publish();
+        try{c.locateInU1(id,ch);}
+        catch(Exception e){message=L10n.t("nfc.location_failed","ch",ch+1,"msg",e.getMessage());kind="err";log(message);return;}
+        String done=L10n.t("nfc.linked_saved","ch",ch+1,"spool",Api.label(spool));log(done);
+        try{for(int prev:c.releasePrevious(ch,id))log(L10n.t("link.previous_stored","id",prev,"ch",ch+1));message=done;kind="ok";}
+        catch(Exception e){message=L10n.t("link.previous_failed","ch",ch+1,"msg",e.getMessage());kind="err";log(message);}
     }
     private void manualFeed(int ch,boolean load){
         if(manualOperation){cancel(L10n.t("feed.busy_op"),"err");return;}
@@ -222,21 +240,27 @@ public class SpoolService extends Service {
                         int decision=detector.update(Api.sensors(latest),now());
                         if(decision!=ch||Api.printing(latest)){cancel(L10n.t("nfc.state_changed"),"err");return;}
                         if(!current())return;
-                        c.inject(ch,uid,tagType);detector.cancel();verifyChannel=ch;verifyCount=0;verifyDeadline=now()+CONFIRM_WINDOW_MS;phase="confirming";
+                        // filament_detect/set faz o rolo aparecer na tela da U1, mas não grava filament_spool_id.
+                        try{c.inject(ch,uid,tagType);}catch(Exception e){log("filament_detect/set T"+(ch+1)+": "+e.getMessage());}
+                        detector.cancel();
+                        try{linkSpool(c,ch,spool.getInt("id"));}catch(Exception e){cancel(e.getMessage(),"err");return;}
+                        verifyChannel=ch;verifyCount=0;verifyDeadline=now()+CONFIRM_WINDOW_MS;phase="confirming";
                         message=L10n.t("nfc.confirming");kind="info";
                     }else{phase="feeding";message=L10n.t("nfc.feeding","ch",ch+1);kind="info";}
                 }
             }else if(verifyChannel>=0){
                 int ch=verifyChannel;
                 if(!manualVerify&&!Api.sensors(fresh)[ch])cancel(L10n.t("nfc.removed"),"err");
-                else if(Api.spoolId(fresh,ch)==spool.getInt("id")&&(manualVerify||uid.equals(Api.tagUid(fresh,ch)))){
+                else if(Api.spoolId(fresh,ch)==spool.getInt("id")&&(manualVerify||Api.tagUid(fresh,ch).isEmpty()||uid.equals(Api.tagUid(fresh,ch)))){
+                    // Critério: filament_spool_id[ch] == id. O CARD_UID só invalida se vier com OUTRO UID
+                    // (o SpoolLink pode reescrever o info com CARD_UID vazio).
                     if(++verifyCount>=CONFIRM_READS){
-                        verifyChannel=-1;phase="";
-                        if(ledger!=null){ledger.record(ch,spool.getInt("id"),manualVerify?Api.tagUid(fresh,ch):uid,manualVerify?"manual":"NFC");saveLedger();}
-                        message=manualVerify?L10n.t("assign.done","id",spool.getInt("id"),"ch",ch+1):L10n.t("nfc.linked","ch",ch+1,"spool",Api.label(spool));kind="ok";
-                        lastTag=null;log(message);vibrate();
+                        verifyChannel=-1;phase="";int id=spool.getInt("id");
+                        if(ledger!=null){ledger.record(ch,id,manualVerify?Api.tagUid(fresh,ch):uid,manualVerify?"manual":"NFC");saveLedger();}
+                        finishLink(c,ch,id);
+                        lastTag=null;vibrate();
                     }
-                }else {verifyCount=0;if(now()>verifyDeadline)cancel(L10n.t("nfc.not_confirmed","ch",ch+1),"err");}
+                }else {verifyCount=0;if(now()>verifyDeadline){int id=spool.getInt("id");cancel(manualVerify?L10n.t("link.not_confirmed","id",id,"ch",ch+1):L10n.t("nfc.link_not_confirmed","id",id,"ch",ch+1),"err");}}
             }
             if(message.equals(L10n.t("conn.searching"))||message.equals(L10n.t("conn.offline"))||message.startsWith(L10n.t("conn.found","ip",""))){message=L10n.t("nfc.tap");kind="info";}
             publish();

@@ -10,7 +10,7 @@
 
 ## Ecossistema
 
-O app e o U1 Factory Display formam um par: mesmos fluxos, textos (`spec/strings.json`, pt e en) e formato canônico de `card_uids` (`"A,B"` em hex maiúsculo). Versões compatíveis: **app 2.0.0 ↔ display v0.7.0**.
+O app e o U1 Factory Display formam um par: mesmos fluxos, textos (`spec/strings.json`, pt e en) e formato canônico de `card_uids` (`"A,B"` em hex maiúsculo). Versões compatíveis: **app 2.0.3 ↔ display v0.7.1**.
 
 - Este repositório: aplicativo Android que usa o NFC do celular.
 - Tela complementar: [U1 Factory Display](https://github.com/caiotmoraes/u1-factory-display) — painel Waveshare ESP32-S3 (Wi-Fi + PN532), as mesmas 5 abas.
@@ -20,7 +20,7 @@ Os dois conversam com a Snapmaker U1 pelo Moonraker (`:7125`), usando o proxy do
 ```mermaid
 flowchart LR
   U1["U1<br/>Klipper / Moonraker :7125<br/>+ proxy Spoolman + SpoolLink"]
-  D["U1 Factory Display v0.7.0<br/>ESP32-S3 · Wi-Fi · PN532 NFC"]
+  D["U1 Factory Display v0.7.1<br/>ESP32-S3 · Wi-Fi · PN532 NFC"]
   A["Spool Factory 2.0.0<br/>Android · NFC do celular"]
   S["spec/ compartilhada<br/>strings.json<br/>card_uids formato A,B"]
   D --> U1

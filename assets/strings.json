@@ -275,6 +275,42 @@
   "pt": "Associação não confirmada pela U1. Confira o T{ch} e leia a tag novamente.",
   "en": "The U1 did not confirm the assignment. Check T{ch} and read the tag again."
  },
+ "nfc.linking": {
+  "pt": "Vinculando o rolo #{id} ao T{ch} na U1…",
+  "en": "Linking spool #{id} to T{ch} on the U1…"
+ },
+ "nfc.link_failed": {
+  "pt": "A U1 recusou o vínculo do T{ch}: {msg}",
+  "en": "The U1 rejected the T{ch} link: {msg}"
+ },
+ "nfc.link_not_confirmed": {
+  "pt": "A U1 não confirmou o rolo #{id} no T{ch}. Confira e leia a tag novamente.",
+  "en": "The U1 did not confirm spool #{id} on T{ch}. Check it and read the tag again."
+ },
+ "nfc.location_saving": {
+  "pt": "Salvando o local no Spoolman…",
+  "en": "Saving the location in Spoolman…"
+ },
+ "nfc.location_failed": {
+  "pt": "T{ch} vinculado na U1, mas o Spoolman não salvou o local: {msg}",
+  "en": "T{ch} linked on the U1, but Spoolman did not save the location: {msg}"
+ },
+ "nfc.linked_saved": {
+  "pt": "Associado ao T{ch}: {spool} · local salvo no Spoolman",
+  "en": "Assigned to T{ch}: {spool} · location saved in Spoolman"
+ },
+ "link.not_confirmed": {
+  "pt": "A U1 não confirmou o rolo #{id} no T{ch}. Confira o alimentador e tente de novo.",
+  "en": "The U1 did not confirm spool #{id} on T{ch}. Check the feeder and try again."
+ },
+ "link.previous_stored": {
+  "pt": "Rolo #{id} saiu do T{ch} · local: Armazém",
+  "en": "Spool #{id} left T{ch} · location: Armazém"
+ },
+ "link.previous_failed": {
+  "pt": "Não atualizei o local do rolo anterior do T{ch}: {msg}",
+  "en": "Could not update the previous T{ch} spool location: {msg}"
+ },
  "nfc.already_in": {
   "pt": "Este rolo já está no T{ch}.",
   "en": "This spool is already in T{ch}."

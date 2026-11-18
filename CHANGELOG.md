@@ -1,3 +1,14 @@
+## 2.0.3 — vínculo extrusor → rolo no Spoolman
+
+Correção do teste de 18/11/2026: depois de ler a tag e inserir (ou de "Ativar no alimentador"), o rolo aparecia na U1 mas `filament_spool_id` ficava 0 e o Spoolman não descontava. `filament_detect/set` e `spoollink/set` não gravam o vínculo; quem grava é o `SET_SPOOL_ID` do SpoolLink. Agora, nos dois fluxos (igual ao U1 Factory Display v0.7.1):
+
+1. `POST /printer/gcode/script?script=SET_SPOOL_ID%20CHANNEL%3D<0..3>%20SPOOL_ID%3D<id>` (script na query, corpo vazio). Recusa da U1 aparece na tela; resposta perdida (timeout) não repete o comando, só confere.
+2. Confirma `filament_spool_id[ch] == id` (4 leituras em 20 s). O `CARD_UID` do detector só invalida se vier com outro UID.
+3. `PATCH /v1/spool/<id> {"location":"Snapmaker U1 - Extrusor N"}` e confere o local salvo.
+4. Rolo anterior desse extrusor (local exatamente `Snapmaker U1 - Extrusor N`, outro id) vai para `Armazém`; locais personalizados não são tocados. Cada um entra no histórico.
+- Textos novos em `spec/strings.json` (`nfc.linking`, `nfc.link_failed`, `nfc.link_not_confirmed`, `nfc.location_*`, `nfc.linked_saved`, `link.*`), idênticos ao display.
+- Teste `tests/LinkTest.java` (servidor HTTP falso): query exata, corpo vazio, recusa, timeout sem repetir, local do novo e do anterior.
+
 ## 2.0.2 — correção de abertura
 
 - O app fechava ao abrir no Android 15/16: o controlador das barras era pedido antes de a tela existir. Agora é configurado depois do `setContentView`.
